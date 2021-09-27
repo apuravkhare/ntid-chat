@@ -163,12 +163,18 @@ io.on('connection', socket => {
 // }
 
 // For deployment
-if (process.env.PROD) {
-    app.use(express.static(path.join(__dirname, '../client/build')));
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, '../client/build/index.html'));
-    });
-}
+app.use(express.static(path.resolve(__dirname, '../client/build')));
+
+app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+});
+
+// if (process.env.PROD) {
+//     app.use(express.static(path.resolve(__dirname, '../client/build')));
+//     app.get('*', (req, res) => {
+//         res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+//     });
+// }
 
 const port = process.env.PORT || 8000;
 server.listen(port, () => console.log(`Server is up on port ${port}`));

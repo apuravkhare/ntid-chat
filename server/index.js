@@ -57,7 +57,7 @@ io.on('connection', socket => {
         socketToRoom[socket.id] = roomID;
         const usersInThisRoom = users[roomID].filter(id => id !== socket.id);
 
-        fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', '', { flag: "a+",  encoding: "utf8" });
+        // fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', '', { flag: "a+",  encoding: "utf8" });
         // fs.writeFile('./transcripts/' + socketToRoom[socket.id] + '.txt', '', { flag: "a",  encoding: "utf8" }, () => {
         //     console.log('File created');
         // });
@@ -84,7 +84,7 @@ io.on('connection', socket => {
     });
 
     socket.on('binaryAudioData', function(data) {
-        fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', createMessage('Audio', 'Audio received'), { flag: "a+",  encoding: "utf8" });
+        // fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', createMessage('Audio', 'Audio received'), { flag: "a+",  encoding: "utf8" });
         // fs.writeFile('/transcripts/' + socketToRoom[socket.id] + '.txt', createMessage('Audio received'), { flag: "a",  encoding: "utf8" }, () => {
         //     console.log('Log appended');
         // });
@@ -118,7 +118,7 @@ io.on('connection', socket => {
                 console.log('Response from Google');
                 const responseStr = data.results[0].alternatives.map(alt => alt.transcript).join(" ")
                 console.log(request);
-                fs.writeFileSync('./transcripts/' + socketToRoom[client.id] + '.txt', createMessage('Response', responseStr), { flag: "a+",  encoding: "utf8" });
+                // fs.writeFileSync('./transcripts/' + socketToRoom[client.id] + '.txt', createMessage('Response', responseStr), { flag: "a+",  encoding: "utf8" });
                 // fs.writeFile('/transcripts/' + socketToRoom[client.id] + '.txt', createMessage(responseStr), { flag: "a",  encoding: "utf8" }, () => {
                 //     console.log('Log created');
                 // });

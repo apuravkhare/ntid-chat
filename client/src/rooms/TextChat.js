@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
-import {Popover} from "react-bootstrap"
+import React from "react";
 
 const TextChat = (props) => {
 

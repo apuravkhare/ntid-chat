@@ -15,6 +15,9 @@ const fs = require('fs');
 const speech = require('@google-cloud/speech');
 const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require('constants');
 
+const Peer = require('simple-peer');
+const wrtc = require('wrtc');
+
 // Creates a client
 const speechClient = new speech.SpeechClient();
 
@@ -58,9 +61,6 @@ io.on('connection', socket => {
         const usersInThisRoom = users[roomID].filter(id => id !== socket.id);
 
         // fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', '', { flag: "a+",  encoding: "utf8" });
-        // fs.writeFile('./transcripts/' + socketToRoom[socket.id] + '.txt', '', { flag: "a",  encoding: "utf8" }, () => {
-        //     console.log('File created');
-        // });
 
         socket.emit("all users", usersInThisRoom);
     });
@@ -84,11 +84,8 @@ io.on('connection', socket => {
     });
 
     socket.on('binaryAudioData', function(data) {
+      console.log('Room - received audio');
         // fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', createMessage('Audio', 'Audio received'), { flag: "a+",  encoding: "utf8" });
-        // fs.writeFile('/transcripts/' + socketToRoom[socket.id] + '.txt', createMessage('Audio received'), { flag: "a",  encoding: "utf8" }, () => {
-        //     console.log('Log appended');
-        // });
-
         receiveData(data);
     })
 
@@ -111,6 +108,8 @@ io.on('connection', socket => {
         recognizeStream = speechClient.streamingRecognize(request)
             .on('error', (err) => {
                 console.error('Error when processing audio: ' + (err && err.code ? 'Code: ' + err.code + ' ' : '') + (err && err.details ? err.details : ''));
+                console.error('Error dump:');
+                console.error(err);
                 client.emit('googleCloudStreamError', err);
                 stopRecognitionStream();
             })
@@ -119,11 +118,12 @@ io.on('connection', socket => {
                 const responseStr = data.results[0].alternatives.map(alt => alt.transcript).join(" ")
                 console.log(request);
                 // fs.writeFileSync('./transcripts/' + socketToRoom[client.id] + '.txt', createMessage('Response', responseStr), { flag: "a+",  encoding: "utf8" });
-                // fs.writeFile('/transcripts/' + socketToRoom[client.id] + '.txt', createMessage(responseStr), { flag: "a",  encoding: "utf8" }, () => {
-                //     console.log('Log created');
-                // });
 
-                client.emit('speechData', data);
+                // send transcript to everyone
+                users[socketToRoom[client.id]].forEach(socketId => {
+                  io.to(socketId).emit('speechData', data);
+                });
+                // client.emit('speechData', data);
 
                 // if end of utterance, let's restart stream
                 // this is a small hack. After 65 seconds of silence, the stream will still throw an error for speech length limit

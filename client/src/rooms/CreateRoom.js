@@ -9,7 +9,7 @@ import { stringify } from "querystring";
 const CreateRoom = (props) => {
     // const [displayRoomId, setDisplayRoomId] = useState("");
     const [roomId, setRoomId] = useState("");
-    const routerPath = "room/";
+    const routerPath = "room_/";
     // const videoQueryParam = "?v=true";
     // const captionQueryParam = "?c=true";
     const [queryParams, setQueryParams] = useState({ video: true, captions: true });

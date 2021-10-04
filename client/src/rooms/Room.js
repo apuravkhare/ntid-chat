@@ -6,7 +6,7 @@ import "../util/room.css";
 import { parse } from 'querystring';
 import { faCommentAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, OverlayTrigger, Popover } from "react-bootstrap";
+import { OverlayTrigger, Popover } from "react-bootstrap";
 import TextChat from "./TextChat";
 
 const Container = styled.div`
@@ -59,6 +59,7 @@ const audioConstraints = {
 const Room = (props) => {
     const [peers, setPeers] = useState([]);
     const [captions, setCaptions] = useState("");
+    // const [canBeginChat, setCanBeginChat] = useState(false);
     const socketRef = useRef();
     const userVideo = useRef();
     const peersRef = useRef([]);
@@ -70,6 +71,7 @@ const Room = (props) => {
     let input = useRef();
 
     useEffect(() => {
+        console.log('Room - useEffect');
         socketRef.current = io.connect("/");
         AudioContext.current = window.AudioContext || window.webkitAudioContext;
         context.current = new AudioContext.current();
@@ -81,6 +83,7 @@ const Room = (props) => {
             // console.log(audioStream.current.getAudioTracks()[0].getSettings());
             input.current = context.current.createMediaStreamSource(audioStream.current);
             input.current.connect(processor.current);
+
             processor.current.onaudioprocess = function (e) {
                 microphoneProcess(e);
             };
@@ -140,6 +143,7 @@ const Room = (props) => {
         parsed.video = (parsed.video === "true");
         parsed.captions = (parsed.captions === "true");
         return [props.match.params.roomID, parsed];
+        // return [props.location.state.roomID, parsed];
     }
 
     function updateCaptions(payload) {
@@ -165,6 +169,7 @@ const Room = (props) => {
     }
 
     function microphoneProcess(e) {
+        console.log('Room - microphone process');
         var left = e.inputBuffer.getChannelData(0);
         var left16 = convertFloat32ToInt16(left);
         socketRef.current.emit('binaryAudioData', left16);

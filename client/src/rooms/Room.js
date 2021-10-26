@@ -8,11 +8,13 @@ import { faCommentAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { OverlayTrigger, Popover } from "react-bootstrap";
 import TextChat from "./TextChat";
+import ScrollingCaption from "./ScrollingCaption";
+import ErrorModal from "../util/ErrorModal";
 
 const Container = styled.div`
     padding: 20px;
     display: flex;
-    height: 100vh;
+    height: 80vh;
     width: 90%;
     margin: auto;
     flex-wrap: wrap;
@@ -59,6 +61,8 @@ const audioConstraints = {
 const Room = (props) => {
     const [peers, setPeers] = useState([]);
     const [captions, setCaptions] = useState("");
+    const [asrResult, setAsrResult] = useState();
+    const [errorMsg, setErrorMsg] = useState("");
     // const [canBeginChat, setCanBeginChat] = useState(false);
     const socketRef = useRef();
     const userVideo = useRef();
@@ -88,12 +92,12 @@ const Room = (props) => {
                 microphoneProcess(e);
             };
 
-            if (roomOptions.video) {
-                userVideo.current.srcObject = stream;
-                
-                // check if this can be used for echo cancellation
-                userVideo.current.volume = 0;
-            }
+            // if (roomOptions.video) {
+            userVideo.current.srcObject = stream;
+            
+            // check if this can be used for echo cancellation
+            userVideo.current.volume = 0;
+            // }
 
             socketRef.current.emit("join room", roomID);
             socketRef.current.on("all users", users => {
@@ -133,7 +137,8 @@ const Room = (props) => {
             })
 
             socketRef.current.on("room full", payload => {
-                console.log("Room full, please try later!")
+                setErrorMsg("Room full, please contact administrator.");
+                console.log("Room full, please try later!");
             });
         })
     }, []);
@@ -150,10 +155,15 @@ const Room = (props) => {
         console.log('Payload received');
 
         // TODO: choose item with max alt.confidence here. (0.0 indicates confidence was not set)
-        var newTranscript = payload.results[0].alternatives.map(alt => alt.transcript).join(" ");
-        var captionsUpdated = (captions.length > 100) ? newTranscript : captions + newTranscript; // newTranscript;
-        console.log(payload);
-        setCaptions(captionsUpdated);
+        if (roomOptions.video) {
+            var newTranscript = payload.results[0].alternatives.map(alt => alt.transcript).join(" ");
+            var captionsUpdated = (captions.length > 100) ? newTranscript : captions + newTranscript; // newTranscript;
+            console.log(payload);
+            setCaptions(captionsUpdated);
+        } else {
+            console.log('Set ASR Result: ' + JSON.stringify(payload));
+            setAsrResult(payload);
+        }
     }
 
     function convertFloat32ToInt16(buffer) {
@@ -205,36 +215,56 @@ const Room = (props) => {
         return peer;
     }
 
-    return (
-        <Container>
-            {/* User's own video */}
-            <StyledVideo muted ref={userVideo} autoPlay playsInline />
+    function renderVideoMode() {
+        return (
+            <Container>
+                {/* User's own video */}
+                <StyledVideo muted ref={userVideo} autoPlay playsInline />
+    
+                {/* All other videos */}
+                {roomOptions.video && peers.map((peer, index) => {
+                    return (
+                        <Video key={index} peer={peer} />
+                    );
+                })}
+                <Caption>
+                    {captions}
+                </Caption>
+                {/* <OverlayTrigger
+                  trigger="click"
+                  key="top"
+                  placement="top"
+                  overlay={<Popover id={`popover-positioned-top`} style={{height: "50%", width: "50%"}}>
+                                <Popover.Header as="h3">Chat</Popover.Header>
+                                    <Popover.Body>
+                                      <TextChat></TextChat>
+                                    </Popover.Body>
+                            </Popover>}>
+                    <span className="chat-fa-text-chat-icon" >
+                        <FontAwesomeIcon icon={faCommentAlt} className="chat-fa-icon" size="lg"  />
+                        <span className="lead" style={{paddingLeft: "0.5em"}}>Chat</span>
+                    </span>
+                </OverlayTrigger> */}
+            </Container>
+        );
+    }
 
-            {/* All other videos */}
-            {roomOptions.video && peers.map((peer, index) => {
-                return (
-                    <Video key={index} peer={peer} />
-                );
-            })}
-            <Caption>
-                {captions}
-            </Caption>
-            <OverlayTrigger
-              trigger="click"
-              key="top"
-              placement="top"
-              overlay={<Popover id={`popover-positioned-top`} style={{height: "50%", width: "50%"}}>
-                            <Popover.Header as="h3">Chat</Popover.Header>
-                                <Popover.Body>
-                                  <TextChat></TextChat>
-                                </Popover.Body>
-                        </Popover>}>
-                <span className="chat-fa-text-chat-icon" >
-                    <FontAwesomeIcon icon={faCommentAlt} className="chat-fa-icon" size="lg"  />
-                    <span className="lead" style={{paddingLeft: "0.5em"}}>Chat</span>
-                </span>
-            </OverlayTrigger>
-        </Container>
+    function renderCaptionsMode() {
+        return (
+            <Container>
+                {/* Still transmitting user's video to participants who have access to see it */}
+                <StyledVideo muted ref={userVideo} autoPlay playsInline style={{ height: "0px", width: "0px" }} />
+                <ScrollingCaption captionCount={3} displayCaptions={asrResult}>
+                </ScrollingCaption>
+            </Container>
+        );
+    }
+
+    return (
+        <>
+            {roomOptions.video ? renderVideoMode() : renderCaptionsMode()}
+            {errorMsg ? <ErrorModal msg={errorMsg} isDisplayed={!!errorMsg} onClose={() => setErrorMsg("")}></ErrorModal> : <></>}
+        </>
     );
 };
 

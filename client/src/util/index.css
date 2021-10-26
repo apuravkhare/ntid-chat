@@ -38,3 +38,17 @@ code {
   cursor: pointer;
   background-color: #0d99fd;
 }
+
+.scrolling-caption-container {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  border: 2px solid #0d6efd;
+  border-radius: 0.3em;
+  background-color: rgb(97, 218, 251, 0.6);
+  font-size: x-large;
+}
+
+.scrolling-caption-container p {
+  padding: 0.2em;
+  color:rgb(0, 0, 0);
+}

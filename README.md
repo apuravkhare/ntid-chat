@@ -19,3 +19,5 @@ npm start
 cd client
 npm start
 ```
+
+The app is deployed [here](https://ntid-chat.herokuapp.com/)

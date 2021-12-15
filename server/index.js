@@ -89,6 +89,14 @@ io.on('connection', socket => {
         receiveData(data);
     })
 
+    socket.on('textMessage', function(data) {
+      users[socketToRoom[socket.id]].forEach(socketId => {
+        io.to(socket.id).emit('speechData',
+        { results: [{alternatives: [{transcript: data}]}],
+          speakerId: users[socketToRoom[socket.id]].indexOf(socket.id) + 1});
+      });
+    })
+
     // var LIMIT = 0;
     // const messages = [];
     function startRecognitionStream(client) {
@@ -111,7 +119,9 @@ io.on('connection', socket => {
                 console.error('Error dump:');
                 console.error(err);
                 client.emit('googleCloudStreamError', err);
-                stopRecognitionStream();
+                // stopRecognitionStream();
+                console.log('Attempting to restart stream.')
+                startRecognitionStream();
             })
             .on('data', (data) => {
                 console.log('Response from Google');
@@ -120,6 +130,7 @@ io.on('connection', socket => {
                 // fs.writeFileSync('./transcripts/' + socketToRoom[client.id] + '.txt', createMessage('Response', responseStr), { flag: "a+",  encoding: "utf8" });
 
                 // send transcript to everyone
+                data['speakerId'] = users[socketToRoom[client.id]].indexOf(client.id) + 1;
                 users[socketToRoom[client.id]].forEach(socketId => {
                   io.to(socketId).emit('speechData', data);
                 });

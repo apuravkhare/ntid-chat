@@ -10,7 +10,7 @@ const ScrollingCaption = ({captionCount, displayCaptions}) => {
     // console.log('updating captions: ' + JSON.stringify(displayCaptions));
     
     if (displayCaptions && displayCaptions.results && displayCaptions.results[0]) {
-      captions[displayIndex] = displayCaptions.results[0].alternatives.map(alt => alt.transcript).join(" ");
+      captions[displayIndex] = "Speaker " + displayCaptions.speakerId + ": " + displayCaptions.results[0].alternatives.map(alt => alt.transcript).join(" ");
 
       if (displayCaptions.results[0].isFinal && displayIndex === count - 1) {
         const captionsCopy = new Array(count);

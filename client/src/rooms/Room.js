@@ -4,12 +4,14 @@ import Peer from "simple-peer";
 import styled from "styled-components";
 import "../util/room.css";
 import { parse } from 'querystring';
-import { faCommentAlt, faMicrophone } from '@fortawesome/free-solid-svg-icons';
+import { faCommentAlt, faMicrophone,faTextHeight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { OverlayTrigger, Popover } from "react-bootstrap";
 import TextChat from "./TextChat";
 import ScrollingCaption from "./ScrollingCaption";
 import ErrorModal from "../util/ErrorModal";
+
+
 
 
 const Container = styled.div`
@@ -27,7 +29,6 @@ const StyledVideo = styled.video`
 `;
 
 const Caption = styled.p`
-    font-size: x-large;
     background-color: #2a2a2e;
     color: white;
     padding: 0.2em;
@@ -45,7 +46,9 @@ const Video = (props) => {
     }, []);
 
     return (
-        <StyledVideo playsInline autoPlay ref={ref} />
+        <StyledVideo playsInline autoPlay ref={ref} >
+        </StyledVideo>
+        
     );
 }
 
@@ -60,6 +63,7 @@ const audioConstraints = {
 }
 
 const Room = (props) => {
+    const [fontSize,setFontSize] = useState(16);
     const [peers, setPeers] = useState([]);
     const [captions, setCaptions] = useState("");
     const [asrResult, setAsrResult] = useState();
@@ -76,6 +80,7 @@ const Room = (props) => {
     let audioStream = useRef();
     let input = useRef();
 
+    
     useEffect(() => {
         console.log('Room - useEffect');
         socketRef.current = io.connect("/");
@@ -146,6 +151,16 @@ const Room = (props) => {
             });
         })
     }, []);
+
+    function increaseSize(){
+        if (fontSize >= 22) {
+            setFontSize(22)
+        }
+        else{
+            setFontSize(fontSize+2)
+        }
+        console.log(fontSize)
+    }
 
     function getQueryParams(qs) {
         const parsed = parse(props.location.search.replace("?", ""));
@@ -219,7 +234,7 @@ const Room = (props) => {
 
         return peer;
     }
-
+    
     function renderVideoMode() {
         return (
             <Container>
@@ -232,9 +247,14 @@ const Room = (props) => {
                         <Video key={index} peer={peer} />
                     );
                 })}
-                <Caption>
+                <Caption style = {{  fontSize:  `${fontSize}px`}}>
                     {captions}
                 </Caption>
+                <div>
+                    <button className="chat-fa-text-chat-icon" onClick = {increaseSize}>
+                    <FontAwesomeIcon icon={faTextHeight} size="lg"  />
+                    </button>
+                </div>
                 <span style={{marginBottom:"5%", marginRight:"2%", position:"fixed", bottom:0, right: 0}}>
                     <OverlayTrigger
                       trigger="click"
@@ -274,8 +294,9 @@ const Room = (props) => {
         return (
             <Container>
                 {/* Still transmitting user's video to participants who have access to see it */}
-                <StyledVideo muted ref={userVideo} autoPlay playsInline style={{ height: "0px", width: "0px" }} />
-                <ScrollingCaption captionCount={3} displayCaptions={asrResult}>
+                <StyledVideo muted ref={userVideo} autoPlay playsInline style={{ height: "0px", width: "0px" }} >
+                </StyledVideo>
+                <ScrollingCaption style = {{  fontSize:  `${fontSize}px`}} captionCount={3} displayCaptions={asrResult}>
                 </ScrollingCaption>
             </Container>
         );

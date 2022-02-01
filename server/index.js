@@ -16,7 +16,7 @@ const speech = require('@google-cloud/speech');
 const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require('constants');
 
 const Peer = require('simple-peer');
-const wrtc = require('wrtc');
+//const wrtc = require('wrtc');
 
 // Creates a client
 const speechClient = new speech.SpeechClient();

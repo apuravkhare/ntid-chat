@@ -79,10 +79,10 @@ const Room = (props) => {
     let processor = useRef();
     let audioStream = useRef();
     let input = useRef();
-    const hasGetUserMedia = !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
-        navigator.mozGetUserMedia || navigator.msGetUserMedia);
     
     useEffect(() => {
+        const hasGetUserMedia = !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
+            navigator.mozGetUserMedia || navigator.msGetUserMedia || (navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
 
         if (!hasGetUserMedia) {
             setErrorMsg("This browser does not support streaming audio/video.");

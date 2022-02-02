@@ -20,10 +20,14 @@ const TextChat = ({onSend}) => {
 
   return(
     <>
-      <div style={{height: "25%"}}>
-        <textarea rows={5} onChange={onTyping}></textarea>
-        <span style={{padding: "0.5em"}}>
-          <FontAwesomeIcon onClick={handleSendClick} icon={faPaperPlane} className="chat-fa-icon" size="lg"  />
+      <div style={{display: "flex", alignItems: "center"}}>
+        <textarea rows={2} cols={80} onChange={onTyping} style={{resize: "none"}}></textarea>
+        <span style={{padding: "0.5em", lineHeight: "0.5em"}}>
+          <button className="chat-fa-text-chat-icon" onClick = {handleSendClick}>
+            <FontAwesomeIcon icon={faPaperPlane} className="chat-fa-icon" size="lg"  />
+            <span className="lead" style={{padding: "0.5em"}}>Send</span>
+          </button>
+          
         </span>
       </div>
     </>

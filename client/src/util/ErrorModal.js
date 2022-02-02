@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { Component, useEffect, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 
 const ErrorModal = ({msg, isDisplayed, onClose}) => {

@@ -68,7 +68,7 @@ const Room = (props) => {
     const [captions, setCaptions] = useState("");
     const [asrResult, setAsrResult] = useState();
     const [errorMsg, setErrorMsg] = useState("");
-    const isMuted = useRef(true);
+    const isMuted = useRef(false);
     // const [canBeginChat, setCanBeginChat] = useState(false);
     const socketRef = useRef();
     const userVideo = useRef();
@@ -79,14 +79,26 @@ const Room = (props) => {
     let processor = useRef();
     let audioStream = useRef();
     let input = useRef();
-
+    const hasGetUserMedia = !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia || navigator.msGetUserMedia);
     
     useEffect(() => {
+
+        if (!hasGetUserMedia) {
+            setErrorMsg("This browser does not support streaming audio/video.");
+            return;
+        }
+        
         console.log('Room - useEffect');
         socketRef.current = io.connect("/");
         AudioContext.current = window.AudioContext || window.webkitAudioContext;
         context.current = new AudioContext.current();
-        processor.current = context.current.createScriptProcessor(2048, 1, 1);
+        
+        try {
+            processor.current = context.current.createScriptProcessor(2048, 1, 1);
+        } catch {
+            console.error('Error creating scriptProcessorNode');
+        }
 
         navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: audioConstraints }).then(stream => {
             audioStream.current = new MediaStream(stream.getAudioTracks());
@@ -94,6 +106,7 @@ const Room = (props) => {
             // console.log(audioStream.current.getAudioTracks()[0].getSettings());
             input.current = context.current.createMediaStreamSource(audioStream.current);
             input.current.connect(processor.current);
+            processor.current.connect(context.current.destination);
 
             processor.current.onaudioprocess = function (e) {
                 if (!isMuted.current) {
@@ -234,6 +247,45 @@ const Room = (props) => {
 
         return peer;
     }
+
+    function renderOptions() {
+        return (
+        <span style={{marginBottom:"5%", marginRight:"2%", position:"fixed", bottom:0, right: 0}}>
+        {/* <OverlayTrigger
+          trigger="click"
+          key="top"
+          placement="top"
+          overlay={<Popover id={`popover-positioned-top`} style={{height: "50%", width: "50%"}}>
+                        <Popover.Title as="h3">Chat</Popover.Title>
+                            <Popover.Content>
+                              <TextChat onSend={sendTypedMessage}></TextChat>
+                            </Popover.Content>
+                    </Popover>}>
+            <span className="chat-fa-text-chat-icon" >
+                <FontAwesomeIcon icon={faCommentAlt} className="chat-fa-icon" size="lg"  />
+                <span className="lead" style={{padding: "0.5em"}}>Chat</span>
+            </span>
+        </OverlayTrigger> */}
+        
+        <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
+            <FontAwesomeIcon icon={faMicrophone} className="chat-fa-icon" size="lg" />
+            <span className="lead" style={{padding: "0.5em"}}>Talk</span>
+        </span>
+        <span>
+            <button className="chat-fa-text-chat-icon" onClick = {increaseSize}>
+                <FontAwesomeIcon icon={faTextHeight} size="lg"  />
+            </button>
+        </span>
+    </span>);
+    }
+
+    function renderTextMessage() {
+        return (
+            <span style={{marginBottom:"5%", marginLeft:"2%", position:"fixed", bottom:0, left: 0}}>
+                <TextChat onSend={sendTypedMessage}></TextChat>
+            </span>
+        );
+    }
     
     function renderVideoMode() {
         return (
@@ -250,32 +302,8 @@ const Room = (props) => {
                 <Caption style = {{  fontSize:  `${fontSize}px`}}>
                     {captions}
                 </Caption>
-                <div>
-                    <button className="chat-fa-text-chat-icon" onClick = {increaseSize}>
-                    <FontAwesomeIcon icon={faTextHeight} size="lg"  />
-                    </button>
-                </div>
-                <span style={{marginBottom:"5%", marginRight:"2%", position:"fixed", bottom:0, right: 0}}>
-                    <OverlayTrigger
-                      trigger="click"
-                      key="top"
-                      placement="top"
-                      overlay={<Popover id={`popover-positioned-top`} style={{height: "50%", width: "50%"}}>
-                                    <Popover.Title as="h3">Chat</Popover.Title>
-                                        <Popover.Content>
-                                          <TextChat onSend={sendTypedMessage}></TextChat>
-                                        </Popover.Content>
-                                </Popover>}>
-                        <span className="chat-fa-text-chat-icon" >
-                            <FontAwesomeIcon icon={faCommentAlt} className="chat-fa-icon" size="lg"  />
-                            <span className="lead" style={{padding: "0.5em"}}>Chat</span>
-                        </span>
-                    </OverlayTrigger>
-                    <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
-                        <FontAwesomeIcon icon={faMicrophone} className="chat-fa-icon" size="lg" />
-                        <span className="lead" style={{padding: "0.5em"}}>Talk</span>
-                    </span>
-                </span>
+                {renderOptions()}
+                {renderTextMessage()}
             </Container>
         );
     }
@@ -298,6 +326,8 @@ const Room = (props) => {
                 </StyledVideo>
                 <ScrollingCaption style = {{  fontSize:  `${fontSize}px`}} captionCount={3} displayCaptions={asrResult}>
                 </ScrollingCaption>
+                {renderOptions()}
+                {renderTextMessage()}
             </Container>
         );
     }

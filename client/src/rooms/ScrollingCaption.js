@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { Component, useEffect, useState } from "react";
 
 
 const ScrollingCaption = ({captionCount, displayCaptions}) => {

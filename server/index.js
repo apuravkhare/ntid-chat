@@ -91,7 +91,7 @@ io.on('connection', socket => {
 
     socket.on('textMessage', function(data) {
       users[socketToRoom[socket.id]].forEach(socketId => {
-        io.to(socket.id).emit('speechData',
+        io.to(socketId).emit('speechData',
         { results: [{alternatives: [{transcript: data}]}],
           speakerId: users[socketToRoom[socket.id]].indexOf(socket.id) + 1});
       });

@@ -42,9 +42,10 @@ const request = {
 /* Socket.io setup */  
 const users = {};
 const socketToRoom = {};
+const socketToRecognitionStream = {};
 
 io.on('connection', socket => {
-    let recognizeStream = null;
+    // let recognizeStream = null;
 
     socket.on("join room", roomID => {
         if (users[roomID]) {
@@ -61,12 +62,14 @@ io.on('connection', socket => {
         const usersInThisRoom = users[roomID].filter(id => id !== socket.id);
 
         // fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', '', { flag: "a+",  encoding: "utf8" });
+        
+        startRecognitionStream(socket);
+        console.log(`User ${socket.id} has joined the room`);
 
         socket.emit("all users", usersInThisRoom);
     });
 
     socket.on("sending signal", payload => {
-        startRecognitionStream(socket);
         io.to(payload.userToSignal).emit('user joined', { signal: payload.signal, callerID: payload.callerID });
     });
 
@@ -75,18 +78,21 @@ io.on('connection', socket => {
     });
 
     socket.on('disconnect', () => {
-        const roomID = socketToRoom[socket.id];
-        let room = users[roomID];
-        if (room) {
-            room = room.filter(id => id !== socket.id);
-            users[roomID] = room;
-        }
+      console.log(`Disconnecting ${socket.id} from the room`);
+      const roomID = socketToRoom[socket.id];
+      let room = users[roomID];
+      if (room) {
+          room = room.filter(id => id !== socket.id);
+          users[roomID] = room;
+      }
+
+      stopRecognitionStream(socket);
     });
 
     socket.on('binaryAudioData', function(data) {
-      console.log('Room - received audio');
-        // fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', createMessage('Audio', 'Audio received'), { flag: "a+",  encoding: "utf8" });
-        receiveData(data);
+      // console.log('Room - received audio');
+      // fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', createMessage('Audio', 'Audio received'), { flag: "a+",  encoding: "utf8" });
+      receiveData(data, socket);
     })
 
     socket.on('textMessage', function(data) {
@@ -97,65 +103,56 @@ io.on('connection', socket => {
       });
     })
 
-    // var LIMIT = 0;
-    // const messages = [];
     function startRecognitionStream(client) {
-        // console.log("Response from Google");
+      var recognizeStream = speechClient.streamingRecognize(request)
+          .on('error', (err) => {
+              console.error('Error when processing audio: ' + (err && err.code ? 'Code: ' + err.code + ' ' : '') + (err && err.details ? err.details : ''));
+              console.error('Error dump:');
+              console.error(err);
+              client.emit('googleCloudStreamError', err);
+              // stopRecognitionStream();
+              console.log('Attempting to restart stream.')
+              startRecognitionStream();
+          })
+          .on('data', (data) => {
+              console.log('Response from Google');
+              const responseStr = data.results[0].alternatives.map(alt => alt.transcript).join(" ")
+              console.log(request);
+              // fs.writeFileSync('./transcripts/' + socketToRoom[client.id] + '.txt', createMessage('Response', responseStr), { flag: "a+",  encoding: "utf8" });
 
-        // Uncomment to run test code
-        // setTimeout(() => {
-        //     messages.push("hello " + LIMIT);
-        //     client.emit('speechData', {"results":[{"alternatives":[{"words":[],"transcript":messages.join(" "),"confidence":0}],"isFinal":false,"stability":0.009999999776482582,"resultEndTime":{"seconds":"3","nanos":200000000},"channelTag":0,"languageCode":""}],"error":null,"speechEventType":"SPEECH_EVENT_UNSPECIFIED"});
-        //     if (LIMIT < 500) {
-        //         startRecognitionStream(client);
-        //         LIMIT++;
-        //     }
-        // }, 100);
+              // send transcript to everyone
+              data['speakerId'] = users[socketToRoom[client.id]].indexOf(client.id) + 1;
+              users[socketToRoom[client.id]].forEach(socketId => {
+                io.to(socketId).emit('speechData', data);
+              });
+              // client.emit('speechData', data);
 
-        // Uncomment to begin speech to text
-        recognizeStream = speechClient.streamingRecognize(request)
-            .on('error', (err) => {
-                console.error('Error when processing audio: ' + (err && err.code ? 'Code: ' + err.code + ' ' : '') + (err && err.details ? err.details : ''));
-                console.error('Error dump:');
-                console.error(err);
-                client.emit('googleCloudStreamError', err);
-                // stopRecognitionStream();
-                console.log('Attempting to restart stream.')
-                startRecognitionStream();
-            })
-            .on('data', (data) => {
-                console.log('Response from Google');
-                const responseStr = data.results[0].alternatives.map(alt => alt.transcript).join(" ")
-                console.log(request);
-                // fs.writeFileSync('./transcripts/' + socketToRoom[client.id] + '.txt', createMessage('Response', responseStr), { flag: "a+",  encoding: "utf8" });
+              // if end of utterance, let's restart stream
+              // this is a small hack. After 65 seconds of silence, the stream will still throw an error for speech length limit
+              // if (data.results[0] && data.results[0].isFinal) {
+              //     stopRecognitionStream();
+              //     startRecognitionStream(client, GCSServiceAccount, request);
+              //     // console.log('restarted stream serverside');
+              // }
+          });
 
-                // send transcript to everyone
-                data['speakerId'] = users[socketToRoom[client.id]].indexOf(client.id) + 1;
-                users[socketToRoom[client.id]].forEach(socketId => {
-                  io.to(socketId).emit('speechData', data);
-                });
-                // client.emit('speechData', data);
-
-                // if end of utterance, let's restart stream
-                // this is a small hack. After 65 seconds of silence, the stream will still throw an error for speech length limit
-                // if (data.results[0] && data.results[0].isFinal) {
-                //     stopRecognitionStream();
-                //     startRecognitionStream(client, GCSServiceAccount, request);
-                //     // console.log('restarted stream serverside');
-                // }
-            });
+          socketToRecognitionStream[client.id] = recognizeStream;
       }
 
-    function stopRecognitionStream() {
-        if (recognizeStream) {
-            recognizeStream.end();
-        }
-        recognizeStream = null;
+    function stopRecognitionStream(socket) {
+      if (socketToRecognitionStream[socket.id]) {
+        socketToRecognitionStream[socket.id].end();
+      }
+      
+      socketToRecognitionStream[socket.id] = null;
+      delete socketToRecognitionStream[socket.id];
     }
 
-    function receiveData(data) {
-        if (recognizeStream) {
-            recognizeStream.write(data);
+    function receiveData(data, socket) {
+        if (socketToRecognitionStream[socket.id]) {
+          socketToRecognitionStream[socket.id].write(data);
+        } else {
+          console.warn("Recognition stream is undefined.");
         }
     }
 

@@ -118,7 +118,7 @@ const Room = (props) => {
             userVideo.current.srcObject = stream;
             
             // check if this can be used for echo cancellation
-            userVideo.current.volume = 0;
+            // userVideo.current.volume = 0;
             // }
 
             socketRef.current.emit("join room", roomID);

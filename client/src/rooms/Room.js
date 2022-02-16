@@ -6,26 +6,16 @@ import "../util/room.css";
 import { parse } from 'querystring';
 import { faCommentAlt, faMicrophone,faTextHeight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { OverlayTrigger, Popover } from "react-bootstrap";
+import { Col, Container, Navbar, Row } from "react-bootstrap";
 import TextChat from "./TextChat";
 import ScrollingCaption from "./ScrollingCaption";
 import ErrorModal from "../util/ErrorModal";
 
 
-
-
-const Container = styled.div`
-    padding: 20px;
-    display: flex;
-    height: 80vh;
-    width: 90%;
-    margin: auto;
-    flex-wrap: wrap;
-`;
-
 const StyledVideo = styled.video`
-    height: 40%;
-    width: 50%;
+    height: 80%;
+    margin: 1em;
+    max-width: 100%;
 `;
 
 const Caption = styled.p`
@@ -159,8 +149,13 @@ const Room = (props) => {
             })
 
             socketRef.current.on("room full", payload => {
-                setErrorMsg("Room full, please contact administrator.");
-                console.log("Room full, please try later!");
+                if (payload && payload.msg) {
+                    setErrorMsg(payload.msg);
+                    console.log(payload.msg);
+                } else {
+                    setErrorMsg("Room full, please contact administrator.");
+                    console.log("Room full, please try later!");
+                }
             });
         })
     }, []);
@@ -190,9 +185,10 @@ const Room = (props) => {
         if (roomOptions.video) {
             var newTranscript = payload.results[0].alternatives.map(alt => alt.transcript).join(" ");
             // var captionsUpdated = (captions.length > 100) ? newTranscript : captions + newTranscript; // newTranscript;
-            var captionsUpdated = "Speaker " + payload.speakerId + ": " + newTranscript;
+            var captionsUpdated = "Speaker " + payload.speakerIndex + ": " + newTranscript;
             console.log(payload);
-            setCaptions(captionsUpdated);
+            // setCaptions(captionsUpdated);
+            setAsrResult(payload);
         } else {
             console.log('Set ASR Result: ' + JSON.stringify(payload));
             setAsrResult(payload);
@@ -250,61 +246,42 @@ const Room = (props) => {
 
     function renderOptions() {
         return (
-        <span style={{marginBottom:"5%", marginRight:"2%", position:"fixed", bottom:0, right: 0}}>
-        {/* <OverlayTrigger
-          trigger="click"
-          key="top"
-          placement="top"
-          overlay={<Popover id={`popover-positioned-top`} style={{height: "50%", width: "50%"}}>
-                        <Popover.Title as="h3">Chat</Popover.Title>
-                            <Popover.Content>
-                              <TextChat onSend={sendTypedMessage}></TextChat>
-                            </Popover.Content>
-                    </Popover>}>
-            <span className="chat-fa-text-chat-icon" >
-                <FontAwesomeIcon icon={faCommentAlt} className="chat-fa-icon" size="lg"  />
-                <span className="lead" style={{padding: "0.5em"}}>Chat</span>
-            </span>
-        </OverlayTrigger> */}
-        
-        <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
-            <FontAwesomeIcon icon={faMicrophone} className="chat-fa-icon" size="lg" />
-            <span className="lead" style={{padding: "0.5em"}}>Talk</span>
-        </span>
-        <span>
-            <button className="chat-fa-text-chat-icon" onClick = {increaseSize}>
-                <FontAwesomeIcon icon={faTextHeight} size="lg"  />
-            </button>
-        </span>
-    </span>);
+            <Navbar bg="light" fixed="bottom">
+                <Container>
+                    <Row className="w-100">
+                        <Col xs  lg="9">
+                            <TextChat onSend={sendTypedMessage}></TextChat>
+                        </Col>
+                        <Col>
+                            <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
+                                <FontAwesomeIcon icon={faMicrophone} className="chat-fa-icon" size="lg" />
+                                <span className="lead" style={{padding: "0.5em"}}>Talk</span>
+                            </span>
+                            <span>
+                                <button className="chat-fa-text-chat-icon" onClick = {increaseSize}>
+                                    <FontAwesomeIcon icon={faTextHeight} size="lg"  />
+                                </button>
+                            </span>
+                        </Col>
+                    </Row>
+                </Container>
+            </Navbar>);
     }
 
-    function renderTextMessage() {
+    function renderVideo() {
         return (
-            <span style={{marginBottom:"5%", marginLeft:"2%", position:"fixed", bottom:0, left: 0}}>
-                <TextChat onSend={sendTypedMessage}></TextChat>
-            </span>
-        );
-    }
-    
-    function renderVideoMode() {
-        return (
-            <Container>
+            <>
                 {/* User's own video */}
-                <StyledVideo muted ref={userVideo} autoPlay playsInline />
-    
+                <Col className="h-100">
+                    <StyledVideo muted ref={userVideo} autoPlay playsInline />
+                </Col>
                 {/* All other videos */}
                 {roomOptions.video && peers.map((peer, index) => {
                     return (
-                        <Video key={index} peer={peer} />
+                        <Col className="h-100"><Video key={index} peer={peer} /></Col>
                     );
                 })}
-                <Caption style = {{  fontSize:  `${fontSize}px`}}>
-                    {captions}
-                </Caption>
-                {renderOptions()}
-                {renderTextMessage()}
-            </Container>
+            </>
         );
     }
 
@@ -318,24 +295,20 @@ const Room = (props) => {
         isMuted.current = !isMuted.current;
     }
 
-    function renderCaptionsMode() {
-        return (
-            <Container>
-                {/* Still transmitting user's video to participants who have access to see it */}
-                <StyledVideo muted ref={userVideo} autoPlay playsInline style={{ height: "0px", width: "0px" }} >
-                </StyledVideo>
-                <ScrollingCaption style = {{  fontSize:  `${fontSize}px`}} captionCount={3} displayCaptions={asrResult}>
-                </ScrollingCaption>
-                {renderOptions()}
-                {renderTextMessage()}
-            </Container>
-        );
-    }
-
     return (
         <>
-            {roomOptions.video ? renderVideoMode() : renderCaptionsMode()}
-            {errorMsg ? <ErrorModal msg={errorMsg} isDisplayed={!!errorMsg} onClose={() => setErrorMsg("")}></ErrorModal> : <></>}
+        <Container className="h-100" style={{overflow:"auto"}}>
+            <Row className="align-items-center h-25" style={{boxShadow:"0px 2px 5px #999999"}} hidden={!roomOptions.video}>
+                {roomOptions.video ? renderVideo() : (<StyledVideo muted ref={userVideo} autoPlay playsInline style={{ height: "0px", width: "0px" }} />)}
+            </Row>
+            <Row className="align-items-center" style={{overflow:"auto", height: roomOptions.video ? "50%" : "75%"}}>
+                <Col className="h-100">
+                    <ScrollingCaption style = {{  fontSize:  `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} />
+                </Col>
+            </Row>
+        </Container>
+        {renderOptions()}
+        {errorMsg ? <ErrorModal msg={errorMsg} isDisplayed={!!errorMsg} onClose={() => setErrorMsg("")}></ErrorModal> : <></>}
         </>
     );
 };

@@ -15,7 +15,7 @@ function App() {
         <Route path="/room_/:roomID" component={RoomLandingPage} />
         <Route path="/room/:roomID" component={Room} />
       </Switch>
-      <Footer />
+      {/* <Footer /> */}
     </BrowserRouter>
   );
 }

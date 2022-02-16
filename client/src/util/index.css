@@ -1,3 +1,8 @@
+html, body, #root, .App {
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -54,6 +59,28 @@ code {
   border-radius: 0.3em;
   background-color: rgb(97, 218, 251, 0.6);
   font-size: x-large;
+  width: fit-content;
+  word-wrap: normal;
+  max-width: 75%;
+  float: left;
+}
+
+.scrolling-caption-container-sender {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  border: 2px solid #0d6e06;
+  border-radius: 0.3em;
+  background-color: rgb(97, 218, 97, 0.6);
+  font-size: x-large;
+  width: fit-content;
+  word-wrap: normal;
+  max-width: 75%;
+  float: right;
+}
+
+.scrolling-caption-container-sender p {
+  padding: 0.2em;
+  color:rgb(0, 0, 0);
 }
 
 .scrolling-caption-container p {

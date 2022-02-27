@@ -13,8 +13,8 @@ import ErrorModal from "../util/ErrorModal";
 
 
 const StyledVideo = styled.video`
-    height: 80%;
-    margin: 1em;
+    height: 90%;
+    margin: 0.5em;
     max-width: 100%;
 `;
 
@@ -174,6 +174,7 @@ const Room = (props) => {
         const parsed = parse(props.location.search.replace("?", ""));
         parsed.video = (parsed.video === "true");
         parsed.captions = (parsed.captions === "true");
+        parsed.identifySpeakers = (parsed.idSpeaker === "true");
         return [props.match.params.roomID, parsed];
         // return [props.location.state.roomID, parsed];
     }
@@ -298,12 +299,12 @@ const Room = (props) => {
     return (
         <>
         <Container className="h-100" style={{overflow:"auto"}}>
-            <Row className="align-items-center h-25" style={{boxShadow:"0px 2px 5px #999999"}} hidden={!roomOptions.video}>
+            <Row className="align-items-center" style={{boxShadow:"0px 2px 5px #999999", height: !!roomOptions.captions ? "33%" : "75%", overflow:"auto"}} hidden={!roomOptions.video}>
                 {roomOptions.video ? renderVideo() : (<StyledVideo muted ref={userVideo} autoPlay playsInline style={{ height: "0px", width: "0px" }} />)}
             </Row>
-            <Row className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%"}}>
+            <Row hidden={roomOptions.captions === false} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%"}}>
                 <Col className="h-100">
-                    <ScrollingCaption style = {{  fontSize:  `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} />
+                    <ScrollingCaption style = {{  fontSize:  `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} identifySpeakers={roomOptions.identifySpeakers} />
                 </Col>
             </Row>
         </Container>

@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { createRef, useEffect, useState } from "react";
 
-const ScrollingCaption = ({currentUserId, displayCaptions}) => {
+const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers}) => {
   const senderUserId = currentUserId;
   // const [captions, setCaptions] = useState([{"userId": 1, "message": "This is a test message This is a test message"}, {"userId": 2, "message": "This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2"}]); // [{ string: string }]
   const [captions, setCaptions] = useState([]);
@@ -12,7 +12,7 @@ const ScrollingCaption = ({currentUserId, displayCaptions}) => {
     // console.log('updating captions: ' + JSON.stringify(displayCaptions));
     
     if (displayCaptions && displayCaptions.results && displayCaptions.results[0]) {
-      const message = "Speaker " + displayCaptions.speakerIndex + ": " + displayCaptions.results[0].alternatives.map(alt => alt.transcript).join(" ");
+      const message = identifySpeakers ? "Speaker " + displayCaptions.speakerIndex + ": " + displayCaptions.results[0].alternatives.map(alt => alt.transcript).join(" ") : displayCaptions.results[0].alternatives.map(alt => alt.transcript).join(" ");
       console.log("Rendering: " + message);
       if (displayCaptions.results[0].isFinal) {
         const captionsCopy = [...captions];
@@ -46,8 +46,8 @@ const ScrollingCaption = ({currentUserId, displayCaptions}) => {
     for (let index = 0; index < captions.length; index++) {
       const caption = captions[index];
       if (caption && caption["message"]) {
-        containers.push(<div className="w-100" style={{float: caption["userId"] === senderUserId ? "right" : "left"}}>
-                          <div key={index} className={caption["userId"] === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
+        containers.push(<div className="w-100" style={{float: identifySpeakers && caption["userId"] === senderUserId ? "right" : "left"}}>
+                          <div key={index} className={identifySpeakers && caption["userId"] === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
                             <p style={{opacity: "100%"}}> {caption["message"]} </p>
                           </div>
                         </div>);
@@ -58,8 +58,8 @@ const ScrollingCaption = ({currentUserId, displayCaptions}) => {
     if (inProgress) {
       Object.keys(inProgress).forEach((k, i) => {
         if (inProgress[k]) {
-          containers.push(<div className="w-100" style={{float: k === senderUserId ? "right" : "left"}}>
-            <div key={captions.length + i} className={k === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
+          containers.push(<div className="w-100" style={{float: identifySpeakers && k === senderUserId ? "right" : "left"}}>
+            <div key={captions.length + i} className={identifySpeakers && k === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
               <p style={{opacity: "100%"}}> {inProgress[k]} </p>
             </div>
           </div>);

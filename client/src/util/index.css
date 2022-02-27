@@ -55,7 +55,7 @@ code {
 .scrolling-caption-container {
   margin-top: 0.5em;
   margin-bottom: 0.5em;
-  border: 2px solid #0d6efd;
+  border: 2px solid rgb(97, 218, 251, 0.6);
   border-radius: 0.3em;
   background-color: rgb(97, 218, 251, 0.6);
   font-size: large;
@@ -68,7 +68,7 @@ code {
 .scrolling-caption-container-sender {
   margin-top: 0.5em;
   margin-bottom: 0.5em;
-  border: 2px solid #0d6e06;
+  border: 2px solid rgb(97, 218, 97, 0.6);
   border-radius: 0.3em;
   background-color: rgb(97, 218, 97, 0.6);
   font-size: large;

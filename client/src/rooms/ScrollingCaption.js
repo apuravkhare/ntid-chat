@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { createRef, useEffect, useState } from "react";
 
 const ScrollingCaption = ({currentUserId, displayCaptions}) => {
   const senderUserId = currentUserId;
   // const [captions, setCaptions] = useState([{"userId": 1, "message": "This is a test message This is a test message"}, {"userId": 2, "message": "This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2"}]); // [{ string: string }]
   const [captions, setCaptions] = useState([]);
   const [inProgress, setInProgress] = useState({}); // { string: string }
+  let messagesContainer = createRef();
 
   useEffect(() => {
     // console.log('updating captions: ' + JSON.stringify(displayCaptions));
@@ -21,14 +23,23 @@ const ScrollingCaption = ({currentUserId, displayCaptions}) => {
         delete inProgressCopy[displayCaptions.userId];
         setCaptions(captionsCopy);
         setInProgress(inProgressCopy);
+        scrollToMyRef();
       } else {
         const inProgressCopy = {};
         Object.assign(inProgressCopy, inProgress);
         inProgressCopy[displayCaptions.userId] = message;
         setInProgress(inProgressCopy);
+        scrollToMyRef();
       }
     }
   }, [displayCaptions]);
+
+  function scrollToMyRef() {
+    const scroll =
+      messagesContainer.current.scrollHeight -
+      messagesContainer.current.clientHeight;
+    messagesContainer.current.scrollTo(0, scroll);
+  };
 
   function renderCaptionContainer() {
     const containers = [];
@@ -47,8 +58,8 @@ const ScrollingCaption = ({currentUserId, displayCaptions}) => {
     if (inProgress) {
       Object.keys(inProgress).forEach((k, i) => {
         if (inProgress[k]) {
-          containers.push(<div>
-            <div key={captions.length + i} className={k === senderUserId ? "scrolling-caption-container" : "scrolling-caption-container-sender"}>
+          containers.push(<div className="w-100" style={{float: k === senderUserId ? "right" : "left"}}>
+            <div key={captions.length + i} className={k === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
               <p style={{opacity: "100%"}}> {inProgress[k]} </p>
             </div>
           </div>);
@@ -61,7 +72,7 @@ const ScrollingCaption = ({currentUserId, displayCaptions}) => {
 
   return (
     // <div style={{height: "100%", width: "100%"}}>
-    <div>
+    <div ref={messagesContainer} className="h-100" style={{overflow:"auto"}}>
       {renderCaptionContainer()}
     </div>
   );

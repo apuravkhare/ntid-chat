@@ -99,7 +99,8 @@ io.on('connection', socket => {
       users[socketToRoom[socket.id]].forEach(socketId => {
         io.to(socketId).emit('speechData',
         { results: [{alternatives: [{transcript: data}]}],
-          speakerId: users[socketToRoom[socket.id]].indexOf(socket.id) + 1});
+          speakerIndex: users[socketToRoom[socket.id]].indexOf(socket.id) + 1,
+          userId: socket.id});
       });
     })
 
@@ -112,7 +113,7 @@ io.on('connection', socket => {
               client.emit('googleCloudStreamError', err);
               // stopRecognitionStream();
               console.log('Attempting to restart stream.')
-              startRecognitionStream();
+              startRecognitionStream(client);
           })
           .on('data', (data) => {
               console.log('Response from Google');
@@ -121,7 +122,8 @@ io.on('connection', socket => {
               // fs.writeFileSync('./transcripts/' + socketToRoom[client.id] + '.txt', createMessage('Response', responseStr), { flag: "a+",  encoding: "utf8" });
 
               // send transcript to everyone
-              data['speakerId'] = users[socketToRoom[client.id]].indexOf(client.id) + 1;
+              data['speakerIndex'] = users[socketToRoom[client.id]].indexOf(client.id) + 1;
+              data['userId'] = client.id;
               users[socketToRoom[client.id]].forEach(socketId => {
                 io.to(socketId).emit('speechData', data);
               });
@@ -152,7 +154,8 @@ io.on('connection', socket => {
         if (socketToRecognitionStream[socket.id]) {
           socketToRecognitionStream[socket.id].write(data);
         } else {
-          console.warn("Recognition stream is undefined.");
+          console.warn("Recognition stream is undefined. Stopping the stream for " + socket.id);
+          stopRecognitionStream(socket);
         }
     }
 

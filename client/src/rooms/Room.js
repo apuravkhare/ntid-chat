@@ -301,7 +301,7 @@ const Room = (props) => {
             <Row className="align-items-center h-25" style={{boxShadow:"0px 2px 5px #999999"}} hidden={!roomOptions.video}>
                 {roomOptions.video ? renderVideo() : (<StyledVideo muted ref={userVideo} autoPlay playsInline style={{ height: "0px", width: "0px" }} />)}
             </Row>
-            <Row className="align-items-center" style={{overflow:"auto", height: roomOptions.video ? "50%" : "75%"}}>
+            <Row className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%"}}>
                 <Col className="h-100">
                     <ScrollingCaption style = {{  fontSize:  `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} />
                 </Col>

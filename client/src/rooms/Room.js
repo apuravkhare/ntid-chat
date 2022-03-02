@@ -272,18 +272,18 @@ const Room = (props) => {
 
     function renderVideo() {
         return (
-            <>
+            <div style={{display:!!roomOptions.video ? "inherit":"none"}}>
                 {/* User's own video */}
                 <Col className="h-100">
                     <StyledVideo muted ref={userVideo} autoPlay playsInline />
                 </Col>
                 {/* All other videos */}
-                {roomOptions.video && peers.map((peer, index) => {
+                {peers.map((peer, index) => {
                     return (
                         <Col className="h-100"><Video key={index} peer={peer} /></Col>
                     );
                 })}
-            </>
+            </div>
         );
     }
 
@@ -301,7 +301,8 @@ const Room = (props) => {
         <>
         <Container className="h-100" style={{overflow:"auto"}}>
             <Row className="align-items-center" style={{boxShadow:"0px 2px 5px #999999", height: !!roomOptions.showCaptions ? "33%" : "75%", overflow:"auto"}} hidden={!roomOptions.video}>
-                {roomOptions.video ? renderVideo() : (<StyledVideo muted ref={userVideo} autoPlay playsInline style={{ height: "0px", width: "0px" }} />)}
+                {/* {roomOptions.video ? renderVideo() : (<StyledVideo muted ref={userVideo} autoPlay playsInline style={{ height: "0px", width: "0px" }} />)} */}
+                {renderVideo()}
             </Row>
             <Row hidden={roomOptions.showCaptions === false} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%"}}>
                 <Col className="h-100">

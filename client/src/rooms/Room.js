@@ -99,7 +99,7 @@ const Room = (props) => {
             processor.current.connect(context.current.destination);
 
             processor.current.onaudioprocess = function (e) {
-                if (!isMuted.current && roomOptions.genCaptions) {
+                if (!isMuted.current && roomOptions.generateCaptions) {
                     microphoneProcess(e);
                 }
             };

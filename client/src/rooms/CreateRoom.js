@@ -12,7 +12,7 @@ const CreateRoom = (props) => {
     const routerPath = "room_/";
     // const videoQueryParam = "?v=true";
     // const captionQueryParam = "?c=true";
-    const [queryParams, setQueryParams] = useState({ video: true, captions: true, idSpeaker: true });
+    const [queryParams, setQueryParams] = useState({ video: true, captions: true, genCaptions: true, idSpeaker: true });
     const [copyBtnToolTipText, setCopyBtnToolTipText] = useState("Copy Room ID");
     
     function create() {
@@ -32,17 +32,22 @@ const CreateRoom = (props) => {
     }
 
     function toggleVideo() {
-        setQueryParams({ video: !queryParams.video, captions: queryParams.captions, idSpeaker: queryParams.idSpeaker });
+        setQueryParams({ video: !queryParams.video, captions: queryParams.captions, genCaptions: queryParams.genCaptions, idSpeaker: queryParams.idSpeaker });
         // setDisplayRoomId(createFullQueryString());
     }
 
     function toggleCaptions() {
-        setQueryParams({ video: queryParams.video, captions: !queryParams.captions, idSpeaker: queryParams.idSpeaker });
+        setQueryParams({ video: queryParams.video, captions: !queryParams.captions, genCaptions: queryParams.genCaptions, idSpeaker: queryParams.idSpeaker });
+        // setDisplayRoomId(createFullQueryString());
+    }
+
+    function toggleGenCaptions() {
+        setQueryParams({ video: queryParams.video, captions: queryParams.captions, genCaptions: !queryParams.genCaptions, idSpeaker: queryParams.idSpeaker });
         // setDisplayRoomId(createFullQueryString());
     }
 
     function toggleIdentifySpeaker() {
-        setQueryParams({ video: queryParams.video, captions: queryParams.captions, idSpeaker: !queryParams.idSpeaker });
+        setQueryParams({ video: queryParams.video, captions: queryParams.captions, genCaptions: queryParams.genCaptions, idSpeaker: !queryParams.idSpeaker });
     }
 
     function createFullQueryString() {
@@ -84,7 +89,11 @@ const CreateRoom = (props) => {
                     </span>
                     <span style={{margin: "0.4em"}}>
                         <input type="checkbox" checked={queryParams['captions']} onChange={toggleCaptions} />
-                        <label style={{paddingLeft: "0.25em"}}>Allow Captions</label>
+                        <label style={{paddingLeft: "0.25em"}}>Show Captions</label>
+                    </span>
+                    <span style={{margin: "0.4em"}}>
+                        <input type="checkbox" checked={queryParams['genCaptions']} onChange={toggleGenCaptions} />
+                        <label style={{paddingLeft: "0.25em"}}>Generate Captions</label>
                     </span>
                     <span style={{margin: "0.4em"}}>
                         <input type="checkbox" checked={queryParams['idSpeaker']} onChange={toggleIdentifySpeaker} />

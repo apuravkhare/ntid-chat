@@ -99,7 +99,7 @@ const Room = (props) => {
             processor.current.connect(context.current.destination);
 
             processor.current.onaudioprocess = function (e) {
-                if (!isMuted.current) {
+                if (!isMuted.current && roomOptions.genCaptions) {
                     microphoneProcess(e);
                 }
             };
@@ -173,8 +173,9 @@ const Room = (props) => {
     function getQueryParams(qs) {
         const parsed = parse(props.location.search.replace("?", ""));
         parsed.video = (parsed.video === "true");
-        parsed.captions = (parsed.captions === "true");
+        parsed.showCaptions = (parsed.captions === "true");
         parsed.identifySpeakers = (parsed.idSpeaker === "true");
+        parsed.generateCaptions = (parsed.genCaptions === "true");
         return [props.match.params.roomID, parsed];
         // return [props.location.state.roomID, parsed];
     }
@@ -299,10 +300,10 @@ const Room = (props) => {
     return (
         <>
         <Container className="h-100" style={{overflow:"auto"}}>
-            <Row className="align-items-center" style={{boxShadow:"0px 2px 5px #999999", height: !!roomOptions.captions ? "33%" : "75%", overflow:"auto"}} hidden={!roomOptions.video}>
+            <Row className="align-items-center" style={{boxShadow:"0px 2px 5px #999999", height: !!roomOptions.showCaptions ? "33%" : "75%", overflow:"auto"}} hidden={!roomOptions.video}>
                 {roomOptions.video ? renderVideo() : (<StyledVideo muted ref={userVideo} autoPlay playsInline style={{ height: "0px", width: "0px" }} />)}
             </Row>
-            <Row hidden={roomOptions.captions === false} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%"}}>
+            <Row hidden={roomOptions.showCaptions === false} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%"}}>
                 <Col className="h-100">
                     <ScrollingCaption style = {{  fontSize:  `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} identifySpeakers={roomOptions.identifySpeakers} />
                 </Col>

@@ -1,7 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {  faEdit } from '@fortawesome/free-solid-svg-icons';
 import React, { createRef, useEffect, useState } from "react";
 
-const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers}) => {
+const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onEditClick}) => {
   const senderUserId = currentUserId;
   // const [captions, setCaptions] = useState([{"userId": 1, "message": "This is a test message This is a test message"}, {"userId": 2, "message": "This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2"}]); // [{ string: string }]
   const [captions, setCaptions] = useState([]);
@@ -48,6 +49,9 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers}) =>
       if (caption && caption["message"]) {
         containers.push(<div className="w-100" style={{float: identifySpeakers && caption["userId"] === senderUserId ? "right" : "left"}}>
                           <div key={index} className={identifySpeakers && caption["userId"] === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
+                            <span>
+                            <FontAwesomeIcon onClick = {() => onEditClick(caption["message"])} icon={faEdit} className="chat-fa-icon" size="sm" />
+                            </span>
                             <p style={{opacity: "100%"}}> {caption["message"]} </p>
                           </div>
                         </div>);

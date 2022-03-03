@@ -58,6 +58,7 @@ const Room = (props) => {
     const [captions, setCaptions] = useState("");
     const [asrResult, setAsrResult] = useState();
     const [errorMsg, setErrorMsg] = useState("");
+    const [editedMessage, setEditedMessage] = useState("");
     const isMuted = useRef(false);
     // const [canBeginChat, setCanBeginChat] = useState(false);
     const socketRef = useRef();
@@ -252,7 +253,7 @@ const Room = (props) => {
                 <Container>
                     <Row className="w-100">
                         <Col xs  lg="9">
-                            <TextChat onSend={sendTypedMessage}></TextChat>
+                            <TextChat value = {editedMessage} onSend={sendTypedMessage}></TextChat>
                         </Col>
                         <Col>
                             <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
@@ -297,6 +298,11 @@ const Room = (props) => {
         isMuted.current = !isMuted.current;
     }
 
+    function onClickEditHandler(msg){
+        setEditedMessage(msg)
+        console.log("room")
+    }
+
     return (
         <>
         <Container className="h-100" style={{overflow:"auto"}}>
@@ -306,7 +312,7 @@ const Room = (props) => {
             </Row>
             <Row hidden={roomOptions.showCaptions === false} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%"}}>
                 <Col className="h-100">
-                    <ScrollingCaption style = {{  fontSize:  `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} identifySpeakers={roomOptions.identifySpeakers} />
+                    <ScrollingCaption onEditClick = {onClickEditHandler}style = {{  fontSize:  `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} identifySpeakers={roomOptions.identifySpeakers} />
                 </Col>
             </Row>
         </Container>

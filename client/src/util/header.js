@@ -8,9 +8,9 @@ class Header extends React.Component {
             <Navbar bg="primary" variant="dark">
                 <Container>
                     <Navbar.Brand>IP-CTS Research Tool</Navbar.Brand>
-                    <Navbar.Text>
+                    {/* <Navbar.Text>
                         &copy;{new Date().getFullYear()} Center on Access Technology - NTID/RIT | All rights reserved
-                    </Navbar.Text>
+                    </Navbar.Text> */}
                 </Container>
             </Navbar>
             // <nav className="navbar navbar-expand-sm bg-primary navbar-dark navbar-custom">

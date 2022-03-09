@@ -48,8 +48,8 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onEd
       const caption = captions[index];
       if (caption && caption["message"]) {
         containers.push(<div className="w-100" style={{float: identifySpeakers && caption["userId"] === senderUserId ? "right" : "left"}}>
-                          <div key={index} className={identifySpeakers && caption["userId"] === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
-                            <span>
+                          <div key={"msg-" + index} className={identifySpeakers && caption["userId"] === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
+                            <span style={{float: "right",padding: "0.2em"}}>
                             <FontAwesomeIcon onClick = {() => onEditClick(caption["message"])} icon={faEdit} className="chat-fa-icon" size="sm" />
                             </span>
                             <p style={{opacity: "100%"}}> {caption["message"]} </p>
@@ -63,7 +63,7 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onEd
       Object.keys(inProgress).forEach((k, i) => {
         if (inProgress[k]) {
           containers.push(<div className="w-100" style={{float: identifySpeakers && k === senderUserId ? "right" : "left"}}>
-            <div key={captions.length + i} className={identifySpeakers && k === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
+            <div key={"msg-" + (captions.length + i)} className={identifySpeakers && k === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
               <p style={{opacity: "100%"}}> {inProgress[k]} </p>
             </div>
           </div>);

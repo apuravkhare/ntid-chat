@@ -4,13 +4,13 @@ import Peer from "simple-peer";
 import styled from "styled-components";
 import "../util/room.css";
 import { parse } from 'querystring';
-import { faCommentAlt, faMicrophone,faTextHeight } from '@fortawesome/free-solid-svg-icons';
+import { faClosedCaptioning, faCommentAlt, faMicrophone,faTextHeight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Col, Container, Navbar, Row } from "react-bootstrap";
 import TextChat from "./TextChat";
 import ScrollingCaption from "./ScrollingCaption";
 import ErrorModal from "../util/ErrorModal";
-
+import { NotificationContainer, NotificationManager } from 'react-notifications';
 
 const StyledVideo = styled.video`
     height: 90%;
@@ -42,6 +42,23 @@ const Video = (props) => {
     );
 }
 
+const Audio = (props) => {
+    const ref = useRef();
+
+    useEffect(() => {
+        props.peer.on("stream", stream => {
+            ref.current.srcObject = stream;
+        })
+    }, []);
+
+    return (
+        <>
+            {/* <FontAwesomeIcon icon={faMicrophone} className="chat-fa-icon" size="lg" /> */}
+            <audio playsInline autoPlay ref={ref}></audio>
+        </>
+    )
+}
+
 
 const videoConstraints = {
     height: window.innerHeight / 2,
@@ -63,6 +80,7 @@ const Room = (props) => {
     // const [canBeginChat, setCanBeginChat] = useState(false);
     const socketRef = useRef();
     const userVideo = useRef();
+    const userAudio = useRef();
     const peersRef = useRef([]);
     const [roomID, roomOptions] = getQueryParams();
     let AudioContext = useRef();
@@ -91,7 +109,7 @@ const Room = (props) => {
             console.error('Error creating scriptProcessorNode');
         }
 
-        navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: audioConstraints }).then(stream => {
+        navigator.mediaDevices.getUserMedia({ video: roomOptions.video ? videoConstraints : false, audio: audioConstraints }).then(stream => {
             audioStream.current = new MediaStream(stream.getAudioTracks());
             // console.log("SETTINGS");
             // console.log(audioStream.current.getAudioTracks()[0].getSettings());
@@ -105,12 +123,14 @@ const Room = (props) => {
                 }
             };
 
-            // if (roomOptions.video) {
-            userVideo.current.srcObject = stream;
+            if (roomOptions.video) {
+                userVideo.current.srcObject = stream;
             
             // check if this can be used for echo cancellation
             // userVideo.current.volume = 0;
-            // }
+            } else {
+                userAudio.current.srcObject = stream;
+            }
 
             socketRef.current.emit("join room", roomID);
             socketRef.current.on("all users", users => {
@@ -182,20 +202,22 @@ const Room = (props) => {
     }
 
     function updateCaptions(payload) {
-        console.log('Payload received');
+        console.debug('Payload received');
+        console.debug('Set ASR Result: ' + JSON.stringify(payload));
+        setAsrResult(payload);
 
         // TODO: choose item with max alt.confidence here. (0.0 indicates confidence was not set)
-        if (roomOptions.video) {
-            var newTranscript = payload.results[0].alternatives.map(alt => alt.transcript).join(" ");
-            // var captionsUpdated = (captions.length > 100) ? newTranscript : captions + newTranscript; // newTranscript;
-            var captionsUpdated = "Speaker " + payload.speakerIndex + ": " + newTranscript;
-            console.log(payload);
-            // setCaptions(captionsUpdated);
-            setAsrResult(payload);
-        } else {
-            console.log('Set ASR Result: ' + JSON.stringify(payload));
-            setAsrResult(payload);
-        }
+        // if (roomOptions.video) {
+        //     var newTranscript = payload.results[0].alternatives.map(alt => alt.transcript).join(" ");
+        //     // var captionsUpdated = (captions.length > 100) ? newTranscript : captions + newTranscript; // newTranscript;
+        //     var captionsUpdated = "Speaker " + payload.speakerIndex + ": " + newTranscript;
+        //     console.log(payload);
+        //     // setCaptions(captionsUpdated);
+        //     setAsrResult(payload);
+        // } else {
+        //     console.log('Set ASR Result: ' + JSON.stringify(payload));
+        //     setAsrResult(payload);
+        // }
     }
 
     function convertFloat32ToInt16(buffer) {
@@ -247,6 +269,29 @@ const Room = (props) => {
         return peer;
     }
 
+    function createNotification(type, message) {
+        setTimeout(() => {
+            setErrorMsg("");
+        }, 2000);
+        
+        return () => {
+          switch (type) {
+            case 'info':
+              NotificationManager.info(message);
+              break;
+            case 'success':
+              NotificationManager.success(message);
+              break;
+            case 'warning':
+              NotificationManager.warning(message);
+              break;
+            case 'error':
+              NotificationManager.error(message);
+              break;
+            }
+        }
+    }
+
     function renderOptions() {
         return (
             <Navbar bg="light" fixed="bottom">
@@ -273,7 +318,7 @@ const Room = (props) => {
 
     function renderVideo() {
         return (
-            <div style={{display:!!roomOptions.video ? "inherit":"none"}}>
+            <div className="h-100" style={{display:!!roomOptions.video ? "inherit":"none"}}>
                 {/* User's own video */}
                 <Col className="h-100">
                     <StyledVideo muted ref={userVideo} autoPlay playsInline />
@@ -281,11 +326,29 @@ const Room = (props) => {
                 {/* All other videos */}
                 {peers.map((peer, index) => {
                     return (
-                        <Col className="h-100"><Video key={index} peer={peer} /></Col>
+                        <Col className="h-100"><Video key={"video-" + index} peer={peer} /></Col>
                     );
                 })}
             </div>
         );
+    }
+
+    function renderAudio() {
+        return (
+            <Col>
+                <p className="text-dark text-opacity-75 float-end">{ (peers && peers.length ? peers.length + 1 : 1) + " user(s) in this room" }</p>
+                {/* User's audio */}
+                    {/* <Audio ref={userAudio} autoPlay playsInline /> */}
+                    {/* <FontAwesomeIcon icon={faMicrophone} className="chat-fa-icon" size="lg" /> */}
+                    <audio muted playsInline autoPlay ref={userAudio}></audio>
+                {/* All other audio */}
+                {peers.map((peer, index) => {
+                    return (
+                        <Audio peer={peer} key={"audio-" + index} autoPlay playsInline />
+                    );
+                })}
+            </Col>
+        )
     }
 
     function sendTypedMessage(message) {
@@ -306,18 +369,26 @@ const Room = (props) => {
     return (
         <>
         <Container className="h-100" style={{overflow:"auto"}}>
-            <Row className="align-items-center" style={{boxShadow:"0px 2px 5px #999999", height: !!roomOptions.showCaptions ? "33%" : "75%", overflow:"auto"}} hidden={!roomOptions.video}>
-                {/* {roomOptions.video ? renderVideo() : (<StyledVideo muted ref={userVideo} autoPlay playsInline style={{ height: "0px", width: "0px" }} />)} */}
-                {renderVideo()}
+            <Row className="align-items-center" style={{boxShadow:"0px 2px 5px #999999", height: !roomOptions.video ? "2em" : (roomOptions.showCaptions ? "33%" : "50%"), overflow:"auto"}}>
+                {roomOptions.video ? renderVideo() : renderAudio()}
             </Row>
             <Row hidden={roomOptions.showCaptions === false} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%"}}>
                 <Col className="h-100">
                     <ScrollingCaption onEditClick = {onClickEditHandler}style = {{  fontSize:  `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} identifySpeakers={roomOptions.identifySpeakers} />
                 </Col>
             </Row>
+            <Row hidden={roomOptions.showCaptions === true} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%", textAlign: "center"}}>
+                <Col className="h-100">
+                    <div className="text-dark text-opacity-50" style={{padding: "5em"}}>
+                        <FontAwesomeIcon icon={faClosedCaptioning} size="3x" />
+                        <h5>You do not have access to view captions in this room.</h5>
+                    </div>
+                </Col>
+            </Row>
         </Container>
-        {renderOptions()}
-        {errorMsg ? <ErrorModal msg={errorMsg} isDisplayed={!!errorMsg} onClose={() => setErrorMsg("")}></ErrorModal> : <></>}
+        {roomOptions.video ? renderOptions() : <></>}
+        {/* {errorMsg ? <ErrorModal msg={errorMsg} isDisplayed={!!errorMsg} onClose={() => setErrorMsg("")}></ErrorModal> : <></>} */}
+        {errorMsg ? createNotification('info', errorMsg) : <></> }
         </>
     );
 };

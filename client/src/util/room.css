@@ -1,3 +1,17 @@
 .welcome {
-    margin-top: 15%;
+    margin-top: 10%;
+}
+
+.room-id-options {
+    padding: 1em;
+    width: 30%;
+    margin: auto;
+}
+
+@media (max-width: 500px) {
+    .room-id-options {
+        padding: 1em;
+        width: 100%;
+        margin: auto;
+    }
 }

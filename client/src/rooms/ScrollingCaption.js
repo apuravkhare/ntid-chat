@@ -50,7 +50,7 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onEd
         containers.push(<div className="w-100" style={{float: identifySpeakers && caption["userId"] === senderUserId ? "right" : "left"}}>
                           <div key={"msg-" + index} className={identifySpeakers && caption["userId"] === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
                             <span style={{float: "right",padding: "0.2em"}}>
-                            <FontAwesomeIcon onClick = {() => onEditClick(caption["message"])} icon={faEdit} className="chat-fa-icon" size="sm" />
+                            <FontAwesomeIcon onClick = {() => onEditClick(caption["message"])} icon={faEdit} size="sm" />
                             </span>
                             <p style={{opacity: "100%"}}> {caption["message"]} </p>
                           </div>

@@ -23,20 +23,22 @@ code {
 }
 
 .chat-fa-text-chat-icon {
-  padding-top: 1em;
-  border: 1px solid black;
-  padding-bottom: 1em;
-  padding-left: 1em;
-  padding-right: 2em;
-  border-radius: 5em;
+  padding-top: 0.5em;
+  border: 1px solid #666;
+  padding-bottom: 0.5em;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  border-radius: 50%;
   margin: 0.1em;
+  margin-left: 0.1em;
   background-color: #0d6efd;
-  color: #dddddd;
+  background-color: #ccc;
 }
 
 .chat-fa-text-chat-icon:hover {
   cursor: pointer;
   background-color: #0d99fd;
+  color: white;
 }
 
 .chat-fa-text-chat-icon-talking {

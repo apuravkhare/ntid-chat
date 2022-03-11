@@ -121,7 +121,7 @@ const CreateRoom = (props) => {
                         overlay={renderTooltip}
                       >
                     <span style={{padding: "0.5em", cursor:"pointer"}} onClick={copyIdToClipboard}>
-                        <FontAwesomeIcon icon={faCopy} className="chat-fa-icon" size="lg" />
+                        <FontAwesomeIcon icon={faCopy} size="lg" />
                         &nbsp;Copy
                     </span>
                     </OverlayTrigger>

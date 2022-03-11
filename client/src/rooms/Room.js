@@ -6,7 +6,7 @@ import "../util/room.css";
 import { parse } from 'querystring';
 import { faClosedCaptioning, faCommentAlt, faMicrophone,faTextHeight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Col, Container, Navbar, Row } from "react-bootstrap";
+import { Col, Container, Form, Navbar, Row } from "react-bootstrap";
 import TextChat from "./TextChat";
 import ScrollingCaption from "./ScrollingCaption";
 import ErrorModal from "../util/ErrorModal";
@@ -297,20 +297,17 @@ const Room = (props) => {
             <Navbar bg="light" fixed="bottom">
                 <Container>
                     <Row className="w-100">
-                        <Col xs  lg="9">
+                        <Form className="p-0">
                             <TextChat value = {editedMessage} onSend={sendTypedMessage}></TextChat>
-                        </Col>
-                        <Col>
-                            <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
-                                <FontAwesomeIcon icon={faMicrophone} className="chat-fa-icon" size="lg" />
+                            {/* TODO: Enable below after adding a mode for synchronized talking */}
+                            {/* <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
+                                <FontAwesomeIcon icon={faMicrophone} size="lg" />
                                 <span className="lead" style={{padding: "0.5em"}}>Talk</span>
+                            </span> */}
+                            <span className="chat-fa-text-chat-icon" onClick = {increaseSize}>
+                                <FontAwesomeIcon icon={faTextHeight} size="lg"  />
                             </span>
-                            <span>
-                                <button className="chat-fa-text-chat-icon" onClick = {increaseSize}>
-                                    <FontAwesomeIcon icon={faTextHeight} size="lg"  />
-                                </button>
-                            </span>
-                        </Col>
+                        </Form>
                     </Row>
                 </Container>
             </Navbar>);

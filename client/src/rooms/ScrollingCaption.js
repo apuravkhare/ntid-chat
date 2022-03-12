@@ -52,7 +52,8 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onEd
                             <span style={{float: "right",padding: "0.2em"}}>
                             <FontAwesomeIcon onClick = {() => onEditClick(caption["message"])} icon={faEdit} size="sm" />
                             </span>
-                            <p style={{opacity: "100%"}}> {caption["message"]} </p>
+                            {/*<p style={{opacity: "100%"}}> {caption["message"]} </p>*/}
+                            <input   style={{opacity: "100%" }} type="text"  defaultValue = {caption["message"]}></input>
                           </div>
                         </div>);
         }

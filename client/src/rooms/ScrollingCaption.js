@@ -2,10 +2,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {  faEdit } from '@fortawesome/free-solid-svg-icons';
 import React, { createRef, useEffect, useState } from "react";
 
-const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onEditClick}) => {
+const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onSend}) => {
   const senderUserId = currentUserId;
   // const [captions, setCaptions] = useState([{"userId": 1, "message": "This is a test message This is a test message"}, {"userId": 2, "message": "This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2"}]); // [{ string: string }]
   const [captions, setCaptions] = useState([]);
+  const [msgUnderedit,setmsgUnderEdit] = useState("")
+  let [message, setMessage] = useState("");
   const [inProgress, setInProgress] = useState({}); // { string: string }
   let messagesContainer = createRef();
 
@@ -41,20 +43,30 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onEd
       messagesContainer.current.clientHeight;
     messagesContainer.current.scrollTo(0, scroll);
   };
-
+  function handleSendClick() {
+    if (onSend) {
+      onSend(message);
+    }
+    console.log("sent edited message")
+    setMessage("");
+    setmsgUnderEdit()
+  }
+  function onTyping(e) {
+    setMessage(e.target.value)
+    console.log(message)
+  }
   function renderCaptionContainer() {
     const containers = [];
     for (let index = 0; index < captions.length; index++) {
       const caption = captions[index];
       if (caption && caption["message"]) {
-        containers.push(<div className="w-100" style={{float: identifySpeakers && caption["userId"] === senderUserId ? "right" : "left"}}>
-                          <div key={"msg-" + index} className={identifySpeakers && caption["userId"] === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
-                            <span style={{float: "right",padding: "0.2em"}}>
-                            <FontAwesomeIcon onClick = {() => onEditClick(caption["message"])} icon={faEdit} size="sm" />
-                            </span>
-                            <p style={{opacity: "100%"}}> {caption["message"]} </p>
-                            {/* Apurav: Commented below temporarily for demo */}
-                            {/* <input   style={{opacity: "100%" }} type="text"  defaultValue = {caption["message"]}></input> */}
+        containers.push(<div className="w-100" style={{overflow:"auto" ,float: identifySpeakers && caption["userId"] === senderUserId ? "right" : "left"}}>
+                          <div onClick = {() => setmsgUnderEdit("msg-" + index)} key={"msg-" + index} className={identifySpeakers && caption["userId"] === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
+                            {/*<p style={{opacity: "100%"}}> {caption["message"]} </p>*/}
+                            {msgUnderedit === "msg-" + index ? 
+                            (<><input style={{ width: "370px", opacity: "100%" }} type="text" defaultValue={caption["message"]}></input><FontAwesomeIcon onClick = {handleSendClick} onChange={onTyping} icon={faEdit} size="sm" /></>):
+                            (<><p style={{opacity: "100%"}}> {caption["message"]} </p></>)}
+                            {/* <input   style={{width:"370px", opacity: "100%" }} type="text"  defaultValue = {caption["message"]}></input> */}
                           </div>
                         </div>);
         }

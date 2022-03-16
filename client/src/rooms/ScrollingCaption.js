@@ -1,19 +1,18 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {  faEdit } from '@fortawesome/free-solid-svg-icons';
+import {  faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import React, { createRef, useEffect, useState } from "react";
 
-const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onSend}) => {
+const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onsend}) => {
   const senderUserId = currentUserId;
   // const [captions, setCaptions] = useState([{"userId": 1, "message": "This is a test message This is a test message"}, {"userId": 2, "message": "This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2"}]); // [{ string: string }]
   const [captions, setCaptions] = useState([]);
-  const [msgUnderedit,setmsgUnderEdit] = useState("")
+  const [msgUnderEdit,setmsgUnderEdit] = useState("")
   let [message, setMessage] = useState("");
   const [inProgress, setInProgress] = useState({}); // { string: string }
   let messagesContainer = createRef();
 
   useEffect(() => {
     // console.log('updating captions: ' + JSON.stringify(displayCaptions));
-    
     if (displayCaptions && displayCaptions.results && displayCaptions.results[0]) {
       const message = identifySpeakers ? "Speaker " + displayCaptions.speakerIndex + ": " + displayCaptions.results[0].alternatives.map(alt => alt.transcript).join(" ") : displayCaptions.results[0].alternatives.map(alt => alt.transcript).join(" ");
       console.log("Rendering: " + message);
@@ -35,7 +34,7 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onSe
         scrollToMyRef();
       }
     }
-  }, [displayCaptions]);
+  }, [displayCaptions,msgUnderEdit]);
 
   function scrollToMyRef() {
     const scroll =
@@ -44,12 +43,12 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onSe
     messagesContainer.current.scrollTo(0, scroll);
   };
   function handleSendClick() {
-    if (onSend) {
-      onSend(message);
+    setmsgUnderEdit("null")
+    if (onsend) {
+      onsend(message);
     }
     console.log("sent edited message")
     setMessage("");
-    setmsgUnderEdit()
   }
   function onTyping(e) {
     setMessage(e.target.value)
@@ -63,9 +62,9 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers,onSe
         containers.push(<div className="w-100" style={{overflow:"auto" ,float: identifySpeakers && caption["userId"] === senderUserId ? "right" : "left"}}>
                           <div onClick = {() => setmsgUnderEdit("msg-" + index)} key={"msg-" + index} className={identifySpeakers && caption["userId"] === senderUserId ? "scrolling-caption-container-sender" : "scrolling-caption-container"}>
                             {/*<p style={{opacity: "100%"}}> {caption["message"]} </p>*/}
-                            {msgUnderedit === "msg-" + index ? 
-                            (<><input style={{ width: "370px", opacity: "100%" }} type="text" defaultValue={caption["message"]}></input><FontAwesomeIcon onClick = {handleSendClick} onChange={onTyping} icon={faEdit} size="sm" /></>):
-                            (<><p style={{opacity: "100%"}}> {caption["message"]} </p></>)}
+                            {msgUnderEdit === "msg-" + index ? 
+                            (<><input onChange={onTyping} style={{ width: "370px", opacity: "100%" }} type="text" defaultValue={caption["message"]}>{console.log(msgUnderEdit)}</input><FontAwesomeIcon onClick = {handleSendClick} icon={faPaperPlane} size="sm" /></>):
+                            (<><p style={{opacity: "100%"}}> {console.log("para rendered")}{caption['message']} </p></>)}
                             {/* <input   style={{width:"370px", opacity: "100%" }} type="text"  defaultValue = {caption["message"]}></input> */}
                           </div>
                         </div>);

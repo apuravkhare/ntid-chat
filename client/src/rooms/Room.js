@@ -371,7 +371,7 @@ const Room = (props) => {
             </Row>
             <Row hidden={roomOptions.showCaptions === false} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%"}}>
                 <Col className="h-100">
-                    <ScrollingCaption onEditClick = {onClickEditHandler}style = {{  fontSize:  `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} identifySpeakers={roomOptions.identifySpeakers} />
+                    <ScrollingCaption onsend = {sendTypedMessage} style = {{  fontSize:  `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} identifySpeakers={roomOptions.identifySpeakers} />
                 </Col>
             </Row>
             <Row hidden={roomOptions.showCaptions === true} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%", textAlign: "center"}}>

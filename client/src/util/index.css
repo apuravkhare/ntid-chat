@@ -89,3 +89,9 @@ code {
   padding: 0.2em;
   color:rgb(0, 0, 0);
 }
+
+.scrolling-caption-container-sender textarea {
+  width: 80%;
+  overflow: hidden;
+  resize: none;
+}

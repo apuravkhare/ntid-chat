@@ -63,6 +63,7 @@ io.on('connection', socket => {
 
         // fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', '', { flag: "a+",  encoding: "utf8" });
         
+        // commented for test
         startRecognitionStream(socket);
         console.log(`User ${socket.id} has joined the room`);
 
@@ -92,13 +93,25 @@ io.on('connection', socket => {
     socket.on('binaryAudioData', function(data) {
       // console.log('Room - received audio');
       // fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', createMessage('Audio', 'Audio received'), { flag: "a+",  encoding: "utf8" });
+      
+      // commented for test
       receiveData(data, socket);
+
+      // Test Code
+      // setTimeout(() => {
+      //   var data = {"results":[{"alternatives":[{"words":[],"transcript":"test ".repeat(Math.floor(Math.random() * 40)),"confidence":0}],"isFinal":true,"stability":0.009999999776482582,"resultEndTime":{"seconds":"3","nanos":200000000},"channelTag":0,"languageCode":""}],"error":null,"speechEventType":"SPEECH_EVENT_UNSPECIFIED"};
+      //   data['speakerIndex'] = users[socketToRoom[socket.id]] && users[socketToRoom[socket.id]].indexOf(socket.id) + 1;
+      //   data['userId'] = socket.id;
+      //   users[socketToRoom[socket.id]].forEach(socketId => {
+      //     io.to(socketId).emit('speechData',  data);
+      //   });
+      // }, 5000);
     })
 
     socket.on('textMessage', function(data) {
       users[socketToRoom[socket.id]].forEach(socketId => {
         io.to(socketId).emit('speechData',
-        { results: [{alternatives: [{transcript: data}]}],
+        { results: [{ alternatives: [{transcript: data}], isFinal: true }],
           speakerIndex: users[socketToRoom[socket.id]].indexOf(socket.id) + 1,
           userId: socket.id});
       });

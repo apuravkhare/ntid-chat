@@ -297,7 +297,7 @@ const Room = (props) => {
             <Navbar bg="light" fixed="bottom">
                 <Container>
                     <Row className="w-100">
-                        <Form className="p-0">
+                        <Form onSubmit={ (e) => e.preventDefault() } className="p-0">
                             <TextChat value = {editedMessage} onSend={sendTypedMessage}></TextChat>
                             {/* TODO: Enable below after adding a mode for synchronized talking */}
                             {/* <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
@@ -371,7 +371,7 @@ const Room = (props) => {
             </Row>
             <Row hidden={roomOptions.showCaptions === false} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%"}}>
                 <Col className="h-100">
-                    <ScrollingCaption onsend = {sendTypedMessage} style = {{  fontSize:  `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} identifySpeakers={roomOptions.identifySpeakers} />
+                    <ScrollingCaption onSend={sendTypedMessage} style = {{fontSize: `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} identifySpeakers={roomOptions.identifySpeakers} />
                 </Col>
             </Row>
             <Row hidden={roomOptions.showCaptions === true} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%", textAlign: "center"}}>

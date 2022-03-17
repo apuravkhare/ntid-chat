@@ -298,7 +298,7 @@ const Room = (props) => {
             <Navbar bg="light" fixed="bottom">
                 <Container>
                     <Row className="w-100">
-                        <Form onSubmit={ (e) => e.preventDefault() } className="p-0">
+                        <div className="p-0">
                             <TextChat value = {editedMessage} onSend={sendTypedMessage}></TextChat>
                             {/* TODO: Enable below after adding a mode for synchronized talking */}
                             {/* <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
@@ -308,7 +308,7 @@ const Room = (props) => {
                             <span className="chat-fa-text-chat-icon" onClick = {increaseSize}>
                                 <FontAwesomeIcon icon={faTextHeight} size="lg"  />
                             </span>
-                        </Form>
+                        </div>
                     </Row>
                 </Container>
             </Navbar>);

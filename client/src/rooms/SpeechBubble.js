@@ -13,10 +13,12 @@ const SpeechBubble = ({identifySpeakers, caption, senderUserId, index, handleSen
   }
 
   function onTyping(e) {
+    setMessage(e.target.value);
+  }
+
+  function onKeyUp(e) {
     if (e.key === 'Enter') {
       onSendClick();
-    } else {
-      setMessage(e.target.value);
     }
   }
 
@@ -30,7 +32,7 @@ const SpeechBubble = ({identifySpeakers, caption, senderUserId, index, handleSen
         (<>
           <p style={{opacity: "0%"}} className="w-75">{caption['message']} </p>
           <FontAwesomeIcon title="Send" className="float-end p-1 chat-fa-icon"  onClick={onSendClick} icon={faPaperPlane} size="lg" />
-          <textarea onChange={onTyping} className="position-absolute top-0 h-75" type="text" defaultValue={caption["message"]}></textarea>
+          <textarea onKeyUp={onKeyUp} onChange={onTyping} className="position-absolute top-0 h-75" type="text" defaultValue={caption["message"]}></textarea>
         </>)
         : (<p style={{opacity: "100%"}}>{identifySpeakers ? caption["speakerDisplayName"] + ": " + caption["message"] : caption["message"] } </p>)}
       </div>

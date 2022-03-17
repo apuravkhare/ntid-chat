@@ -20,16 +20,18 @@ const TextChat = ({onSend,value}) => {
   }
 
   function onTyping(e) {
+    setMessage(e.target.value);
+  }
+
+  function onKeyUp(e) {
     if (e.key === 'Enter') {
       handleSendClick();
-    } else {
-      setMessage(e.target.value);
     }
   }
   
   return(
     <>
-      <input ref={inputRef} type="text" onChange={onTyping} className="w-75" style={{resize: "none", borderRadius: "1em", fontSize:"x-large"}}></input>
+      <input ref={inputRef} type="text" onKeyUp={onKeyUp} onChange={onTyping} className="w-75" style={{resize: "none", borderRadius: "1em", fontSize:"x-large"}}></input>
       <span className="chat-fa-text-chat-icon" onClick = {handleSendClick} >
         <FontAwesomeIcon icon={faPaperPlane} size="lg" />
         {/* <span className="lead" style={{padding: "0.5 em"}}>Send</span> */}

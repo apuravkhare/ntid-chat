@@ -5,9 +5,12 @@ import Room from "./rooms/Room";
 import RoomLandingPage from "./rooms/RoomLandingPage";
 import Header from './util/header';
 import Footer from './util/footer';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
+    <>
     <BrowserRouter>
       <Header />
       <Switch>
@@ -17,6 +20,8 @@ function App() {
       </Switch>
       {/* <Footer /> */}
     </BrowserRouter>
+    <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+    </>
   );
 }
 

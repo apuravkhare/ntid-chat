@@ -11,6 +11,7 @@ import TextChat from "./TextChat";
 import ScrollingCaption from "./ScrollingCaption";
 import ErrorModal from "../util/ErrorModal";
 import { NotificationContainer, NotificationManager } from 'react-notifications';
+import {toast } from 'react-toastify';
 
 const StyledVideo = styled.video`
     height: 90%;
@@ -171,10 +172,13 @@ const Room = (props) => {
 
             socketRef.current.on("room full", payload => {
                 if (payload && payload.msg) {
-                    setErrorMsg(payload.msg);
+                    // setErrorMsg(payload.msg);
+                    createNotification('info', payload.msg)
                     console.log(payload.msg);
                 } else {
-                    setErrorMsg("Room full, please contact administrator.");
+                    // setErrorMsg("Room full, please contact administrator.");
+
+                    createNotification('error', "Room full, please try later!")
                     console.log("Room full, please try later!");
                 }
             });
@@ -270,25 +274,22 @@ const Room = (props) => {
     }
 
     function createNotification(type, message) {
-        setTimeout(() => {
-            setErrorMsg("");
-        }, 2000);
-        
-        return () => {
-          switch (type) {
-            case 'info':
-              NotificationManager.info(message);
-              break;
-            case 'success':
-              NotificationManager.success(message);
-              break;
-            case 'warning':
-              NotificationManager.warning(message);
-              break;
-            case 'error':
-              NotificationManager.error(message);
-              break;
-            }
+        switch (type) {
+        case 'info':
+            toast.info(message);
+            break;
+        case 'success':
+            toast.success(message);
+            break;
+        case 'warning':
+            toast.warn(message);
+            break;
+        case 'error':
+            toast.error(message);
+            break;
+        default:
+            toast(message);
+            break;
         }
     }
 
@@ -385,7 +386,7 @@ const Room = (props) => {
         </Container>
         {roomOptions.video ? renderOptions() : <></>}
         {/* {errorMsg ? <ErrorModal msg={errorMsg} isDisplayed={!!errorMsg} onClose={() => setErrorMsg("")}></ErrorModal> : <></>} */}
-        {errorMsg ? createNotification('info', errorMsg) : <></> }
+        {/* {!!errorMsg ? createNotification('info', errorMsg) : <></> } */}
         </>
     );
 };

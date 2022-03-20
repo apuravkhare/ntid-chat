@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { propTypes } from "react-bootstrap/esm/Image";
 
 
-const TextChat = ({onSend,value}) => {
+const TextChat = ({onSend, fontSize}) => {
 
   let [message, setMessage] = useState("");
   let inputRef = createRef();
@@ -31,7 +31,7 @@ const TextChat = ({onSend,value}) => {
   
   return(
     <>
-      <input ref={inputRef} type="text" onKeyUp={onKeyUp} onChange={onTyping} className="w-75" style={{resize: "none", borderRadius: "1em", fontSize:"x-large"}}></input>
+      <input ref={inputRef} type="text" onKeyUp={onKeyUp} onChange={onTyping} className="w-75" style={{resize: "none", borderRadius: "1em", fontSize: fontSize}}></input>
       <span className="chat-fa-text-chat-icon" onClick = {handleSendClick} >
         <FontAwesomeIcon icon={faPaperPlane} size="lg" />
         {/* <span className="lead" style={{padding: "0.5 em"}}>Send</span> */}

@@ -12,9 +12,10 @@ const CreateRoom = (props) => {
     const routerPath = "room_/";
     // const videoQueryParam = "?v=true";
     // const captionQueryParam = "?c=true";
-    const [queryParams, setQueryParams] = useState({ video: false, captions: false, genCaptions: false, idSpeaker: false });
+    const [queryParams, setQueryParams] = useState({ video: false, captions: false, genCaptions: false, idSpeaker: false, edit: "none" });
     const [copyBtnToolTipText, setCopyBtnToolTipText] = useState("Copy Room ID");
     const [audioModeParticipantType, setAudioModeParticipantType] = useState("hh");
+    const [messageEditType, setMessageEditType] = useState("inline");
     
     function create() {
         // const id = uuid();
@@ -36,30 +37,35 @@ const CreateRoom = (props) => {
         let newRoomId = uuid();
         setRoomId(newRoomId);
         if (eventKey === 'video') {
-            setQueryParams({ video: true, captions: true, genCaptions: true, idSpeaker: true });
+            setQueryParams({ video: true, captions: true, genCaptions: true, idSpeaker: true, edit: messageEditType });
         } else {
-            setQueryParams({ video: false, captions: audioModeParticipantType==="hh", genCaptions: audioModeParticipantType==="h", idSpeaker: false });
+            setQueryParams({ video: false, captions: audioModeParticipantType==="hh", genCaptions: audioModeParticipantType==="h", idSpeaker: false, edit: "none" });
         }
         // setDisplayRoomId(createFullQueryString());
     }
 
     function toggleCaptions() {
-        setQueryParams({ video: queryParams.video, captions: !queryParams.captions, genCaptions: queryParams.genCaptions, idSpeaker: queryParams.idSpeaker });
+        setQueryParams({ video: queryParams.video, captions: !queryParams.captions, genCaptions: queryParams.genCaptions, idSpeaker: queryParams.idSpeaker, edit: queryParams.edit });
         // setDisplayRoomId(createFullQueryString());
     }
 
     function toggleGenCaptions() {
-        setQueryParams({ video: queryParams.video, captions: queryParams.captions, genCaptions: !queryParams.genCaptions, idSpeaker: queryParams.idSpeaker });
+        setQueryParams({ video: queryParams.video, captions: queryParams.captions, genCaptions: !queryParams.genCaptions, idSpeaker: queryParams.idSpeaker, edit: queryParams.edit });
         // setDisplayRoomId(createFullQueryString());
     }
 
     function toggleIdentifySpeaker() {
-        setQueryParams({ video: queryParams.video, captions: queryParams.captions, genCaptions: queryParams.genCaptions, idSpeaker: !queryParams.idSpeaker });
+        setQueryParams({ video: queryParams.video, captions: queryParams.captions, genCaptions: queryParams.genCaptions, idSpeaker: !queryParams.idSpeaker, edit: queryParams.edit });
+    }
+
+    function changeMessageEditType(type) {
+        setMessageEditType(type);
+        setQueryParams({ video: queryParams.video, captions: queryParams.captions, genCaptions: queryParams.genCaptions, idSpeaker: queryParams.idSpeaker, edit: type });
     }
 
     function setAudioParticipantType(type) {
         setAudioModeParticipantType(type);
-        setQueryParams({ video: queryParams.video, captions: type==="hh", genCaptions: type==="h", idSpeaker: queryParams.idSpeaker });
+        setQueryParams({ video: queryParams.video, captions: type==="hh", genCaptions: type==="h", idSpeaker: queryParams.idSpeaker, edit: queryParams.edit });
     }
 
     function createFullQueryString() {
@@ -110,11 +116,25 @@ const CreateRoom = (props) => {
                             <Form.Check id="app-display-captions" type="switch" checked={queryParams['captions']} onChange={toggleCaptions} label="Show Captions" style={{display: !!queryParams["video"] ? "inherit" : "none"}} />
                             <Form.Check id="app-generate-captions" type="switch" checked={queryParams['genCaptions']} onChange={toggleGenCaptions} label="Generate Captions" style={{display: !!queryParams["video"] ? "inherit" : "none"}} />
                             <Form.Check id="app-id-speaker" type="switch" checked={queryParams['idSpeaker']} onChange={toggleIdentifySpeaker} label="Identify Speakers" style={{display: !!queryParams["video"] ? "inherit" : "none"}} />
+
+                            <label form="app-message-edit-type" style={{display: !!queryParams["video"] ? "inherit" : "none"}}>Edit messages:</label>
+                            <ButtonGroup id="app-message-edit-type" style={{display: !!queryParams["video"] ? "inherit" : "none"}}>
+                                <ToggleButton id="message-edit-type-new" type="radio" variant="outline-primary" value="new" onChange={(e) => changeMessageEditType(e.currentTarget.value)} checked={messageEditType==="new"}>
+                                    Create new
+                                </ToggleButton>
+                                <ToggleButton id="message-edit-type-inline" type="radio" variant="outline-primary" value="inline" onChange={(e) => changeMessageEditType(e.currentTarget.value)} checked={messageEditType==="inline"}>
+                                    Inline
+                                </ToggleButton>
+                                <ToggleButton id="participant-type-none" type="radio" variant="outline-primary" value="none" onChange={(e) => changeMessageEditType(e.currentTarget.value)} checked={messageEditType==="none"}>
+                                    Disabled
+                                </ToggleButton>
+                            </ButtonGroup>
+
                         </fieldset>
                     </Form>
                 </div>
                 <div style={{padding: "0.5em"}}>
-                    <span style={{border: "1px solid gray", borderRadius: 4, padding: "0.5em", userSelect: "none", display:"inline-block"}}>{createFullQueryString()}</span>
+                    <span style={{border: "1px solid gray", borderRadius: 4, padding: "0.5em", userSelect: "none", display:"inline-block", backgroundColor: "white"}}>{createFullQueryString()}</span>
                     <OverlayTrigger
                         placement="right"
                         delay={{ show: 200, hide: 500 }}

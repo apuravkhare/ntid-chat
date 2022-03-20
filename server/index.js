@@ -8,6 +8,7 @@ const io = socket(server);
 const path = require("path");
 // const recorder = require('node-record-lpcm16');
 const fs = require('fs');
+const uuidv4 = require('uuid').v4;
 
 
 /* Google Speech to Text Setup */
@@ -28,6 +29,8 @@ const encoding = 'LINEAR16';
 const sampleRateHertz = 16000;
 const languageCode = 'en-US'; //en-US
 
+const messageTypeKeys = { asr: 'ASR', text: 'TEXT', edit: 'EDIT' };
+
 const request = {
   config: {
     encoding: encoding,
@@ -43,6 +46,7 @@ const request = {
 const users = {};
 const socketToRoom = {};
 const socketToRecognitionStream = {};
+let counter = 0; // for testing when ASR is disabled
 
 io.on('connection', socket => {
     // let recognizeStream = null;
@@ -51,7 +55,7 @@ io.on('connection', socket => {
         if (users[roomID]) {
             const length = users[roomID].length;
             if (length === 3) {
-                socket.emit("room full");
+                socket.emit("notification", { type: "error", message: "Room full, please try later!" });
                 return;
             }
             users[roomID].push(socket.id);
@@ -90,6 +94,7 @@ io.on('connection', socket => {
       stopRecognitionStream(socket);
     });
 
+    
     socket.on('binaryAudioData', function(data) {
       // console.log('Room - received audio');
       // fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', createMessage('Audio', 'Audio received'), { flag: "a+",  encoding: "utf8" });
@@ -98,22 +103,56 @@ io.on('connection', socket => {
       receiveData(data, socket);
 
       // Test Code
-      // setTimeout(() => {
-      //   var data = {"results":[{"alternatives":[{"words":[],"transcript":"test ".repeat(Math.floor(Math.random() * 40)),"confidence":0}],"isFinal":true,"stability":0.009999999776482582,"resultEndTime":{"seconds":"3","nanos":200000000},"channelTag":0,"languageCode":""}],"error":null,"speechEventType":"SPEECH_EVENT_UNSPECIFIED"};
-      //   data['speakerIndex'] = users[socketToRoom[socket.id]] && users[socketToRoom[socket.id]].indexOf(socket.id) + 1;
-      //   data['userId'] = socket.id;
-      //   users[socketToRoom[socket.id]].forEach(socketId => {
-      //     io.to(socketId).emit('speechData',  data);
-      //   });
-      // }, 5000);
+      // if (counter < 20) {
+      //   counter++;
+      //   setTimeout(() => {
+      //     var data = {"results":[{"alternatives":[{"words":[],"transcript":"test ".repeat(Math.floor(Math.random() * 40)),"confidence":0}],"isFinal":true,"stability":0.009999999776482582,"resultEndTime":{"seconds":"3","nanos":200000000},"channelTag":0,"languageCode":""}],"error":null,"speechEventType":"SPEECH_EVENT_UNSPECIFIED"};
+      //     data['speakerIndex'] = users[socketToRoom[socket.id]] && users[socketToRoom[socket.id]].indexOf(socket.id) + 1;
+      //     data['userId'] = socket.id;
+      //     data['id'] = generateMessageId();
+      //     data['type'] = messageTypeKeys.asr;
+      //     users[socketToRoom[socket.id]].forEach(socketId => {
+      //       io.to(socketId).emit('speechData',  data);
+      //     });
+          
+      //   }, 3000);
+      // }
     })
 
     socket.on('textMessage', function(data) {
+      const messageId = generateMessageId();
       users[socketToRoom[socket.id]].forEach(socketId => {
         io.to(socketId).emit('speechData',
         { results: [{ alternatives: [{transcript: data}], isFinal: true }],
           speakerIndex: users[socketToRoom[socket.id]].indexOf(socket.id) + 1,
-          userId: socket.id});
+          userId: socket.id,
+          type: messageTypeKeys.text,
+          id: messageId });
+      });
+    })
+
+    socket.on('editMessage', function(data) {
+      const message = data.message;
+      const parentMessageId = data.parentMessageId;
+      const newMessageId = generateMessageId();
+
+      users[socketToRoom[socket.id]].forEach(socketId => {
+        io.to(socketId).emit('speechData',
+        { results: [{ alternatives: [{transcript: message}], isFinal: true }],
+          speakerIndex: users[socketToRoom[socket.id]].indexOf(socket.id) + 1,
+          userId: socket.id,
+          type: messageTypeKeys.edit,
+          id: newMessageId,
+          parentMessageId: parentMessageId });
+      });
+
+      users[socketToRoom[socket.id]].forEach(socketId => {
+        if (socketId !== socket.id) {
+          io.to(socketId).emit("notification", {
+            type: "info",
+            message: "Speaker " + (users[socketToRoom[socket.id]].indexOf(socket.id) + 1) + " edited their message."
+          });
+        }
       });
     })
 
@@ -137,6 +176,12 @@ io.on('connection', socket => {
               // send transcript to everyone
               data['speakerIndex'] = users[socketToRoom[client.id]].indexOf(client.id) + 1;
               data['userId'] = client.id;
+              data['type'] = messageTypeKeys.asr;
+
+              if (data['results'] && data['results'][0] && data['results'][0].isFinal) {
+                data['id'] = generateMessageId();
+              }
+
               users[socketToRoom[client.id]].forEach(socketId => {
                 io.to(socketId).emit('speechData', data);
               });
@@ -178,6 +223,10 @@ io.on('connection', socket => {
 
     function getFormattedDate() {
         return new Date().toISOString();
+    }
+
+    function generateMessageId() {
+      return uuidv4();
     }
 
 });

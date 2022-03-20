@@ -1,8 +1,9 @@
 import React, { createRef, useEffect, useRef, useState } from "react";
+import AppConstants from "../AppConstants";
 import SpeechBubble from "./SpeechBubble";
 
 
-const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers, onSend}) => {
+const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers, onSend, messageEditType}) => {
   const senderUserId = currentUserId;
   // const [captions, setCaptions] = useState([{"userId": 1, "message": "This is a test message This is a test message"}, {"userId": 2, "message": "This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2"}]); // [{ string: string }]
   const [captions, setCaptions] = useState([]);
@@ -13,10 +14,19 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers, onS
     // console.log('updating captions: ' + JSON.stringify(displayCaptions));
     if (displayCaptions && displayCaptions.results && displayCaptions.results[0]) {
       const message = displayCaptions.results[0].alternatives.map(alt => alt.transcript).join(" ");
-      console.log("Rendering: " + message);
       if (displayCaptions.results[0].isFinal) {
         const captionsCopy = [...captions];
-        captionsCopy.push({ "userId": displayCaptions.userId, message: message, speakerDisplayName: "Speaker " + displayCaptions.speakerIndex });
+
+        if (displayCaptions.parentMessageId && messageEditType === AppConstants.messageEditTye.inline) {
+          // changing the object by reference should be enough here.
+          const originalCaption = captionsCopy.find(c => c.id === displayCaptions.parentMessageId)
+          originalCaption.id = displayCaptions.id;
+          originalCaption.parentMessage = originalCaption.message;
+          originalCaption.message = message;
+        } else {
+          captionsCopy.push({ "id": displayCaptions.id, "userId": displayCaptions.userId, message: message, speakerDisplayName: "Speaker " + displayCaptions.speakerIndex, "parentMessage": displayCaptions.parentMessageId ? captionsCopy.find(c => c.id === displayCaptions.parentMessageId)?.message : null });
+        }
+
 
         const inProgressCopy = {};
         Object.assign(inProgressCopy, inProgress);
@@ -42,17 +52,13 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers, onS
     messagesContainer.current.scrollTo(0, scroll);
   }
 
-  function handleSendClick(message) {
-    onSend("(edited) " + message);
-  }
-
   function renderCaptionContainer() {
     const containers = [];
     for (let index = 0; index < captions.length; index++) {
       const caption = captions[index];
       if (caption && caption["message"]) {
         containers.push(
-        <SpeechBubble identifySpeakers={identifySpeakers} caption={caption} senderUserId={senderUserId} index={index} handleSendClick={handleSendClick} />
+        <SpeechBubble key={"msg-" + index} identifySpeakers={identifySpeakers} caption={caption} senderUserId={senderUserId} index={index} handleSendClick={onSend} messageId={caption["id"]} messageEditType={messageEditType} />
         );
       }
     }

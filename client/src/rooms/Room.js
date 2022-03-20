@@ -70,13 +70,14 @@ const audioConstraints = {
     channelCount: 1
 }
 
+const allowedFontSizes = ["small", "medium", "large", "x-large", "xx-large"];
+
 const Room = (props) => {
-    const [fontSize,setFontSize] = useState(16);
+    const [fontSizeIndex, setFontSizeIndex] = useState(2);
     const [peers, setPeers] = useState([]);
     const [captions, setCaptions] = useState("");
     const [asrResult, setAsrResult] = useState();
     const [errorMsg, setErrorMsg] = useState("");
-    const [editedMessage, setEditedMessage] = useState("");
     const isMuted = useRef(false);
     // const [canBeginChat, setCanBeginChat] = useState(false);
     const socketRef = useRef();
@@ -112,8 +113,6 @@ const Room = (props) => {
 
         navigator.mediaDevices.getUserMedia({ video: roomOptions.video ? videoConstraints : false, audio: audioConstraints }).then(stream => {
             audioStream.current = new MediaStream(stream.getAudioTracks());
-            // console.log("SETTINGS");
-            // console.log(audioStream.current.getAudioTracks()[0].getSettings());
             input.current = context.current.createMediaStreamSource(audioStream.current);
             input.current.connect(processor.current);
             processor.current.connect(context.current.destination);
@@ -148,7 +147,6 @@ const Room = (props) => {
             })
 
             socketRef.current.on("user joined", payload => {
-                // console.log(JSON.stringify(payload));
                 const peer = addPeer(payload.signal, payload.callerID, stream);
                 peersRef.current.push({
                     peerID: payload.callerID,
@@ -170,29 +168,18 @@ const Room = (props) => {
                 }
             })
 
-            socketRef.current.on("room full", payload => {
-                if (payload && payload.msg) {
-                    // setErrorMsg(payload.msg);
-                    createNotification('info', payload.msg)
-                    console.log(payload.msg);
+            socketRef.current.on("notification", payload => {
+                if (payload) {
+                    createNotification(payload.message, payload.type)
                 } else {
-                    // setErrorMsg("Room full, please contact administrator.");
-
-                    createNotification('error', "Room full, please try later!")
-                    console.log("Room full, please try later!");
+                    createNotification("An error has occurred. Please contact administrator.")
                 }
             });
         })
     }, []);
 
-    function increaseSize(){
-        if (fontSize >= 22) {
-            setFontSize(22)
-        }
-        else{
-            setFontSize(fontSize+2)
-        }
-        console.log(fontSize)
+    function change(){
+        setFontSizeIndex(current => current === allowedFontSizes.length - 1 ? 0 : current + 1)
     }
 
     function getQueryParams(qs) {
@@ -201,6 +188,7 @@ const Room = (props) => {
         parsed.showCaptions = (parsed.captions === "true");
         parsed.identifySpeakers = (parsed.idSpeaker === "true");
         parsed.generateCaptions = (parsed.genCaptions === "true");
+        parsed.messageEditType = parsed.edit;
         return [props.match.params.roomID, parsed];
         // return [props.location.state.roomID, parsed];
     }
@@ -273,7 +261,7 @@ const Room = (props) => {
         return peer;
     }
 
-    function createNotification(type, message) {
+    function createNotification(message, type) {
         switch (type) {
         case 'info':
             toast.info(message);
@@ -299,13 +287,13 @@ const Room = (props) => {
                 <Container>
                     <Row className="w-100">
                         <div className="p-0">
-                            <TextChat value = {editedMessage} onSend={sendTypedMessage}></TextChat>
+                            <TextChat onSend={sendTypedMessage} fontSize={allowedFontSizes[fontSizeIndex]}></TextChat>
                             {/* TODO: Enable below after adding a mode for synchronized talking */}
                             {/* <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
                                 <FontAwesomeIcon icon={faMicrophone} size="lg" />
                                 <span className="lead" style={{padding: "0.5em"}}>Talk</span>
                             </span> */}
-                            <span className="chat-fa-text-chat-icon" onClick = {increaseSize}>
+                            <span className="chat-fa-text-chat-icon" onClick = {change}>
                                 <FontAwesomeIcon icon={faTextHeight} size="lg"  />
                             </span>
                         </div>
@@ -350,18 +338,16 @@ const Room = (props) => {
     }
 
     function sendTypedMessage(message) {
-        console.log("Message: " + message);
         socketRef.current.emit('textMessage', message);
+    }
+
+    function sendEditedMessage(message, parentMessageId) {
+        socketRef.current.emit('editMessage', { message: message, parentMessageId: parentMessageId });
     }
 
     function toggleSpeech() {
         console.log('toggling isMuted to: ' + (!isMuted.current));
         isMuted.current = !isMuted.current;
-    }
-
-    function onClickEditHandler(msg){
-        setEditedMessage(msg)
-        console.log("room")
     }
 
     return (
@@ -370,9 +356,9 @@ const Room = (props) => {
             <Row className="align-items-center" style={{boxShadow:"0px 2px 5px #999999", height: !roomOptions.video ? "2em" : (roomOptions.showCaptions ? "33%" : "50%"), overflow:"auto"}}>
                 {roomOptions.video ? renderVideo() : renderAudio()}
             </Row>
-            <Row hidden={roomOptions.showCaptions === false} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%"}}>
+            <Row hidden={roomOptions.showCaptions === false} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%", fontSize: allowedFontSizes[fontSizeIndex]}}>
                 <Col className="h-100">
-                    <ScrollingCaption onSend={sendTypedMessage} style = {{fontSize: `${fontSize}px`}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} identifySpeakers={roomOptions.identifySpeakers} />
+                    <ScrollingCaption onSend={sendEditedMessage} style = {{}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} identifySpeakers={roomOptions.identifySpeakers} messageEditType={roomOptions.messageEditType} />
                 </Col>
             </Row>
             <Row hidden={roomOptions.showCaptions === true} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%", textAlign: "center"}}>
@@ -385,8 +371,6 @@ const Room = (props) => {
             </Row>
         </Container>
         {roomOptions.video ? renderOptions() : <></>}
-        {/* {errorMsg ? <ErrorModal msg={errorMsg} isDisplayed={!!errorMsg} onClose={() => setErrorMsg("")}></ErrorModal> : <></>} */}
-        {/* {!!errorMsg ? createNotification('info', errorMsg) : <></> } */}
         </>
     );
 };

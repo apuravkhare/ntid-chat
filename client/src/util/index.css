@@ -1,6 +1,7 @@
 html, body, #root, .App {
   height: 100%;
   overflow: hidden;
+  background-color: #ebebed;
 }
 
 body {
@@ -60,7 +61,6 @@ code {
   border: 2px solid rgb(97, 218, 251, 0.6);
   border-radius: 0.3em;
   background-color: rgb(97, 218, 251, 0.6);
-  font-size: large;
   width: fit-content;
   word-wrap: normal;
   max-width: 75%;
@@ -73,7 +73,6 @@ code {
   border: 2px solid rgb(97, 218, 97, 0.6);
   border-radius: 0.3em;
   background-color: rgb(97, 218, 97, 0.6);
-  font-size: large;
   width: fit-content;
   word-wrap: normal;
   max-width: 75%;
@@ -94,4 +93,13 @@ code {
   width: 80%;
   overflow: hidden;
   resize: none;
+}
+
+.deleted-word {
+  text-decoration: line-through #222 0.1em;
+  color: #222;
+}
+
+.substituted-word {
+  font-style: italic;
 }

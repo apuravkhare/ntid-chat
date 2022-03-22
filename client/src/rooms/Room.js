@@ -11,7 +11,8 @@ import TextChat from "./TextChat";
 import ScrollingCaption from "./ScrollingCaption";
 import ErrorModal from "../util/ErrorModal";
 import { NotificationContainer, NotificationManager } from 'react-notifications';
-import {toast } from 'react-toastify';
+import { toast } from 'react-toastify';
+import AppConstants from "../AppConstants";
 
 const StyledVideo = styled.video`
     height: 90%;
@@ -96,7 +97,7 @@ const Room = (props) => {
             navigator.mozGetUserMedia || navigator.msGetUserMedia || (navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
 
         if (!hasGetUserMedia) {
-            setErrorMsg("This browser does not support streaming audio/video.");
+            createNotification("This browser does not support streaming audio/video.", AppConstants.notificationType.error);
             return;
         }
         
@@ -108,7 +109,8 @@ const Room = (props) => {
         try {
             processor.current = context.current.createScriptProcessor(2048, 1, 1);
         } catch {
-            console.error('Error creating scriptProcessorNode');
+            createNotification("An error occurred while attempting to access your microphone/camera. Please rejoin this room or contact administrator.", AppConstants.notificationType.error);
+            return false;
         }
 
         navigator.mediaDevices.getUserMedia({ video: roomOptions.video ? videoConstraints : false, audio: audioConstraints }).then(stream => {
@@ -175,6 +177,9 @@ const Room = (props) => {
                     createNotification("An error has occurred. Please contact administrator.")
                 }
             });
+        })
+        .catch(error => {
+            createNotification("An error occurred while attempting to access your microphone/camera. Please rejoin this room or contact administrator.", AppConstants.notificationType.error);
         })
     }, []);
 
@@ -263,16 +268,16 @@ const Room = (props) => {
 
     function createNotification(message, type) {
         switch (type) {
-        case 'info':
+        case AppConstants.notificationType.info:
             toast.info(message);
             break;
-        case 'success':
+        case AppConstants.notificationType.success:
             toast.success(message);
             break;
-        case 'warning':
+        case AppConstants.notificationType.warning:
             toast.warn(message);
             break;
-        case 'error':
+        case AppConstants.notificationType.error:
             toast.error(message);
             break;
         default:

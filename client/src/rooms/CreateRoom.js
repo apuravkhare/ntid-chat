@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/free-solid-svg-icons';
 import { Button, ButtonGroup, Dropdown, Form, FormCheck, OverlayTrigger, ToggleButton, Tooltip } from 'react-bootstrap';
 import { stringify } from "querystring";
+import {CopyToClipboard} from 'react-copy-to-clipboard';
 
 const CreateRoom = (props) => {
     // const [displayRoomId, setDisplayRoomId] = useState("");
@@ -23,6 +24,17 @@ const CreateRoom = (props) => {
         let newRoomId = uuid();
         setRoomId(newRoomId);
         // setDisplayRoomId(createFullQueryString());
+    }
+
+    function getFullUri() {
+        return window.location.href + routerPath + createFullQueryString();
+    }
+
+    function showCopiedOverlay() {
+        setCopyBtnToolTipText("Copied!");
+        setTimeout(() => {
+            setCopyBtnToolTipText("Copy Room ID")
+        }, 2000)
     }
 
     function copyIdToClipboard() {
@@ -135,20 +147,18 @@ const CreateRoom = (props) => {
                 </div>
                 <div style={{padding: "0.5em"}}>
                     <span style={{border: "1px solid gray", borderRadius: 4, padding: "0.5em", userSelect: "none", display:"inline-block", backgroundColor: "white"}}>{createFullQueryString()}</span>
-                    <Button variant="success" size="sm" className="mx-1" style={{padding: "0.5em"}} onClick={copyIdToClipboard}>
-                        {/* <FontAwesomeIcon icon={faCopy} size="lg" /> */}
-                        Copy
-                    </Button>
-                    {/* <OverlayTrigger
+                    <OverlayTrigger
                         placement="right"
                         delay={{ show: 200, hide: 500 }}
                         overlay={renderTooltip}
-                      >
-                    <span style={{padding: "0.5em", cursor:"pointer"}} onClick={copyIdToClipboard}>
-                        <FontAwesomeIcon icon={faCopy} size="lg" />
-                        &nbsp;Copy
-                    </span>
-                    </OverlayTrigger> */}
+                    >
+                        <CopyToClipboard text={getFullUri()} onCopy={showCopiedOverlay}>
+                            <span style={{ padding: "0.5em", cursor: "pointer" }}>
+                                <FontAwesomeIcon icon={faCopy} size="lg" />
+                                &nbsp;Copy
+                            </span>
+                        </CopyToClipboard>
+                    </OverlayTrigger>
                 </div>
             </div>
         </div>

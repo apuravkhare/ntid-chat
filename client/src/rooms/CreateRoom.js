@@ -3,7 +3,7 @@ import { v1 as uuid } from "uuid";
 import "../util/room.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/free-solid-svg-icons';
-import { ButtonGroup, Dropdown, Form, FormCheck, OverlayTrigger, ToggleButton, Tooltip } from 'react-bootstrap';
+import { Button, ButtonGroup, Dropdown, Form, FormCheck, OverlayTrigger, ToggleButton, Tooltip } from 'react-bootstrap';
 import { stringify } from "querystring";
 
 const CreateRoom = (props) => {
@@ -135,10 +135,10 @@ const CreateRoom = (props) => {
                 </div>
                 <div style={{padding: "0.5em"}}>
                     <span style={{border: "1px solid gray", borderRadius: 4, padding: "0.5em", userSelect: "none", display:"inline-block", backgroundColor: "white"}}>{createFullQueryString()}</span>
-                    <span style={{padding: "0.5em", cursor:"pointer"}} onClick={copyIdToClipboard}>
-                        <FontAwesomeIcon icon={faCopy} size="lg" />
-                        &nbsp;Copy
-                    </span>
+                    <Button variant="success" size="sm" className="mx-1" style={{padding: "0.5em"}} onClick={copyIdToClipboard}>
+                        {/* <FontAwesomeIcon icon={faCopy} size="lg" /> */}
+                        Copy
+                    </Button>
                     {/* <OverlayTrigger
                         placement="right"
                         delay={{ show: 200, hide: 500 }}

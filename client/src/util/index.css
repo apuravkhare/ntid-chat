@@ -96,8 +96,12 @@ code {
 }
 
 .deleted-word {
-  text-decoration: line-through #222 0.1em;
-  -webkit-text-decoration: line-through #222 0.1em;
+  text-decoration-line: line-through;
+  -webkit-text-decoration-line: line-through;
+  text-decoration-color: #222;
+  -webkit-text-decoration-color: #222;
+  text-decoration-thickness: 0.1em;
+  -webkit-text-decoration-thickness: 0.1em;
   color: #222;
 }
 

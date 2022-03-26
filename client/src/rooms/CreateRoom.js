@@ -133,14 +133,14 @@ const CreateRoom = (props) => {
                         </fieldset>
                     </Form>
                 </div>
-                <div style={{padding: "0.5em"}}>
+                <div style={{padding: "0.5em"}} onClick={copyIdToClipboard}>
                     <span style={{border: "1px solid gray", borderRadius: 4, padding: "0.5em", userSelect: "none", display:"inline-block", backgroundColor: "white"}}>{createFullQueryString()}</span>
                     <OverlayTrigger
                         placement="right"
                         delay={{ show: 200, hide: 500 }}
                         overlay={renderTooltip}
                       >
-                    <span style={{padding: "0.5em", cursor:"pointer"}} onClick={copyIdToClipboard}>
+                    <span style={{padding: "0.5em", cursor:"pointer"}} >
                         <FontAwesomeIcon icon={faCopy} size="lg" />
                         &nbsp;Copy
                     </span>

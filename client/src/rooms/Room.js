@@ -13,6 +13,8 @@ import ErrorModal from "../util/ErrorModal";
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import { toast } from 'react-toastify';
 import AppConstants from "../AppConstants";
+import AppUtil from "../util/AppUtil";
+
 
 const StyledVideo = styled.video`
     height: 90%;
@@ -63,8 +65,8 @@ const Audio = (props) => {
 
 
 const videoConstraints = {
-    height: window.innerHeight / 2,
-    width: window.innerWidth / 2
+    height: window.innerHeight / 3,
+    width: window.innerWidth / 3
 };
 
 const audioConstraints = {
@@ -72,6 +74,27 @@ const audioConstraints = {
 }
 
 const allowedFontSizes = ["small", "medium", "large", "x-large", "xx-large"];
+
+const iceServersConfig = [
+    {
+        urls: "stun:openrelay.metered.ca:80",
+    },
+    {
+        urls: "turn:openrelay.metered.ca:80",
+        username: "openrelayproject",
+        credential: "openrelayproject",
+    },
+    {
+        urls: "turn:openrelay.metered.ca:443",
+        username: "openrelayproject",
+        credential: "openrelayproject",
+    },
+    {
+        urls: "turn:openrelay.metered.ca:443?transport=tcp",
+        username: "openrelayproject",
+        credential: "openrelayproject",
+    },
+];
 
 const Room = (props) => {
     const [fontSizeIndex, setFontSizeIndex] = useState(2);
@@ -97,7 +120,7 @@ const Room = (props) => {
             navigator.mozGetUserMedia || navigator.msGetUserMedia || (navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
 
         if (!hasGetUserMedia) {
-            createNotification("This browser does not support streaming audio/video.", AppConstants.notificationType.error);
+            AppUtil.createNotification("This browser does not support streaming audio/video.", AppConstants.notificationType.error);
             return;
         }
         
@@ -109,7 +132,7 @@ const Room = (props) => {
         try {
             processor.current = context.current.createScriptProcessor(2048, 1, 1);
         } catch {
-            createNotification("An error occurred while attempting to access your microphone/camera. Please rejoin this room or contact administrator.", AppConstants.notificationType.error);
+            AppUtil.createNotification("An error occurred while attempting to access your microphone/camera. Please rejoin this room or contact administrator.", AppConstants.notificationType.error);
             return false;
         }
 
@@ -172,14 +195,14 @@ const Room = (props) => {
 
             socketRef.current.on("notification", payload => {
                 if (payload) {
-                    createNotification(payload.message, payload.type)
+                    AppUtil.createNotification(payload.message, payload.type)
                 } else {
-                    createNotification("An error has occurred. Please contact administrator.")
+                    AppUtil.createNotification("An error has occurred. Please contact administrator.")
                 }
             });
         })
         .catch(error => {
-            createNotification("An error occurred while attempting to access your microphone/camera. Please rejoin this room or contact administrator.", AppConstants.notificationType.error);
+            AppUtil.createNotification("An error occurred while attempting to access your microphone/camera. Please rejoin this room or contact administrator.", AppConstants.notificationType.error);
         })
     }, []);
 
@@ -240,6 +263,7 @@ const Room = (props) => {
         const peer = new Peer({
             initiator: true,
             trickle: false,
+            config: { iceServers: iceServersConfig },
             stream,
         });
 
@@ -254,6 +278,7 @@ const Room = (props) => {
         const peer = new Peer({
             initiator: false,
             trickle: false,
+            config: { iceServers: iceServersConfig },
             stream,
         })
 
@@ -264,26 +289,6 @@ const Room = (props) => {
         peer.signal(incomingSignal);
 
         return peer;
-    }
-
-    function createNotification(message, type) {
-        switch (type) {
-        case AppConstants.notificationType.info:
-            toast.info(message);
-            break;
-        case AppConstants.notificationType.success:
-            toast.success(message);
-            break;
-        case AppConstants.notificationType.warning:
-            toast.warn(message);
-            break;
-        case AppConstants.notificationType.error:
-            toast.error(message);
-            break;
-        default:
-            toast(message);
-            break;
-        }
     }
 
     function renderOptions() {

@@ -97,6 +97,7 @@ code {
 
 .deleted-word {
   text-decoration: line-through #222 0.1em;
+  -webkit-text-decoration: line-through #222 0.1em;
   color: #222;
 }
 

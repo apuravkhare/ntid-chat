@@ -45,7 +45,7 @@ const Video = ({peer, onActionSelect}) => {
             <FontAwesomeIcon icon={faEllipsisV} size="sm" />
             &nbsp;Options
         </span> */}
-            <Dropdown style={{ position: "absolute", marginTop: "1em", marginLeft: "1em" }} onSelect={(eventKey, event) => onActionSelect(eventKey)}>
+            <Dropdown style={{ position: "absolute", marginTop: "1em", marginLeft: "1em", zIndex: "999" }} onSelect={(eventKey, event) => onActionSelect(eventKey)}>
                 <Dropdown.Toggle variant="outline-secondary">
                     Options
                 </Dropdown.Toggle>

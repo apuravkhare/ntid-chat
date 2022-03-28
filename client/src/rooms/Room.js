@@ -4,9 +4,9 @@ import Peer from "simple-peer";
 import styled from "styled-components";
 import "../util/room.css";
 import { parse } from 'querystring';
-import { faClosedCaptioning, faCommentAlt, faMicrophone,faTextHeight } from '@fortawesome/free-solid-svg-icons';
+import { faClosedCaptioning, faCommentAlt, faEllipsisV, faMicrophone,faTextHeight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Col, Container, Form, Navbar, Row } from "react-bootstrap";
+import { Col, Container, Dropdown, Form, Navbar, Row } from "react-bootstrap";
 import TextChat from "./TextChat";
 import ScrollingCaption from "./ScrollingCaption";
 import ErrorModal from "../util/ErrorModal";
@@ -30,19 +30,33 @@ const Caption = styled.p`
     border-radius: 3px;
 `;
 
-const Video = (props) => {
+const Video = ({peer, onActionSelect}) => {
     const ref = useRef();
 
     useEffect(() => {
-        props.peer.on("stream", stream => {
+        peer.on("stream", stream => {
             ref.current.srcObject = stream;
         })
     }, []);
 
     return (
-        <StyledVideo playsInline autoPlay ref={ref} >
-        </StyledVideo>
-        
+        <>
+            {/* <span className="video-options" >
+            <FontAwesomeIcon icon={faEllipsisV} size="sm" />
+            &nbsp;Options
+        </span> */}
+            <Dropdown style={{ position: "absolute", marginTop: "1em", marginLeft: "1em" }} onSelect={(eventKey, event) => onActionSelect(eventKey)}>
+                <Dropdown.Toggle variant="outline-secondary">
+                    Options
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                    <Dropdown.Item eventKey={AppConstants.videoNotificationOptions.speakUp}>Speak Up</Dropdown.Item>
+                    <Dropdown.Item eventKey={AppConstants.videoNotificationOptions.slowDown}>Slow Down</Dropdown.Item>
+                </Dropdown.Menu>
+            </Dropdown>
+            <StyledVideo playsInline autoPlay ref={ref} >
+            </StyledVideo>
+        </>
     );
 }
 
@@ -312,6 +326,21 @@ const Room = (props) => {
             </Navbar>);
     }
 
+    function notifyUser(eventKey, peerIndex) {
+        const peerID = peersRef.current[peerIndex].peerID;
+        console.log("notify user: " + eventKey + " - " + peerID );
+        switch (eventKey) {
+            case AppConstants.videoNotificationOptions.slowDown:
+                socketRef.current.emit("notifyPeer", { peerId: peerID, type: AppConstants.notificationType.warning, message: "Please slow down to improve the captioning accuracy." });
+                break;
+        
+            case AppConstants.videoNotificationOptions.speakUp:
+                socketRef.current.emit("notifyPeer", { peerId: peerID, type: AppConstants.notificationType.warning, message: "Please speak up to improve the captioning accuracy." });
+                break;
+        }
+        
+    }
+
     function renderVideo() {
         return (
             <div className="h-100" style={{display:!!roomOptions.video ? "inherit":"none"}}>
@@ -322,7 +351,7 @@ const Room = (props) => {
                 {/* All other videos */}
                 {peers.map((peer, index) => {
                     return (
-                        <Col className="h-100"><Video key={"video-" + index} peer={peer} /></Col>
+                        <Col className="h-100"><Video key={"video-" + index} peer={peer} onActionSelect={(eventKey) => notifyUser(eventKey, index)} /></Col>
                     );
                 })}
             </div>

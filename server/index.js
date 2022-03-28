@@ -93,7 +93,10 @@ io.on('connection', socket => {
 
       stopRecognitionStream(socket);
     });
-
+    
+    socket.on('notifyPeer', payload => {
+      io.to(payload.peerId).emit("notification", { type: payload.type, message: payload.message })
+    })
     
     socket.on('binaryAudioData', function(data) {
       // console.log('Room - received audio');

@@ -1,8 +1,9 @@
-import React, { Component, useRef, useState } from "react";
+import React, { Component, useEffect, useRef, useState } from "react";
 import { useHistory } from "react-router";
 import { Button, Card, Form, ListGroup, ListGroupItem } from "react-bootstrap";
 import AppUtil from "../util/AppUtil";
 import AppConstants from "../AppConstants";
+import WaveSurfer from "wavesurfer.js";
 
 const RoomLandingPage = (props) => {
 
@@ -12,6 +13,8 @@ const RoomLandingPage = (props) => {
   const [selectedVideoDevice, setSelectedVideoDevice] = useState();
   const [selectedAudioDevice, setSelectedAudioDevice] = useState();
   const userVideo = useRef();
+  const waveformRef = useRef(null);
+  const waveSurfer = useRef(null);
 
   const history = useHistory();
   function beginChat() {
@@ -22,6 +25,16 @@ const RoomLandingPage = (props) => {
     })
     // props.history.push(`/room/${id}`);
   }
+
+  useEffect(() => {
+    if (waveformRef.current) {
+      waveSurfer.current = WaveSurfer.create({ container: waveformRef.current });
+  
+      // Removes events, elements and disconnects Web Audio nodes.
+      // when component unmount
+      return () => waveSurfer.current.destroy();
+    }
+  }, []);
 
   function showErrorMessage(error) {
     console.error(error);
@@ -40,7 +53,7 @@ const RoomLandingPage = (props) => {
     navigator.mediaDevices.enumerateDevices().then(devices => {
       gotDevices(devices);
       setIsConfiguring(true);
-      // changeInputs(audioInputDevices && audioInputDevices[0].deviceId, videoDevices && videoDevices[0].deviceId);
+      changeInputs(audioInputDevices && audioInputDevices[0].deviceId, videoDevices && videoDevices[0].deviceId);
     }).catch(showErrorMessage);
   }
 
@@ -96,14 +109,16 @@ const RoomLandingPage = (props) => {
 
   function renderConfigScreen() {
     return (
-      <Card className="h-75 w-75 m-auto">
+      <Card className="w-75 m-auto">
         <Card.Body>
           <Card.Title>Configure inputs</Card.Title>
-          <Card.Subtitle className="mb-2 text-muted">You may be asked to grant this application permissions to your audio/video devices. Please allow those and select the audio/video devices that you'd like to use.</Card.Subtitle>
+          <Card.Subtitle className="mb-2 text-muted">You may be asked to grant this application permissions to your audio/video devices.
+          {/* Please allow those and select the audio/video devices that you'd like to use. */}
+          </Card.Subtitle>
           <ListGroup>
             <ListGroupItem>
-              <div className="w-50 m-auto">
-                <video className="w-100" ref={userVideo} muted playsInline autoPlay></video>
+              <div className="h-25 m-auto" >
+                <video className="h-100" style={{maxHeight: "250px"}} ref={userVideo} muted playsInline autoPlay></video>
               </div>
               <div>
                 <Form.Label htmlFor="app-select-video" >Select Video:</Form.Label>
@@ -113,6 +128,7 @@ const RoomLandingPage = (props) => {
               </div>
             </ListGroupItem>
             <ListGroupItem>
+              <div ref={waveformRef} />
               <Form.Label htmlFor="app-select-audio" >Select Audio:</Form.Label>
               <Form.Select id="app-select-audio" onChange={e => changeInputs(e.target.value, null)} >
                 {getAudioDeviceOptions()}
@@ -142,9 +158,9 @@ const RoomLandingPage = (props) => {
           <Route path="/room/:id">
   
           </Route> */}
-        <Button className="mx-2" variant="secondary" onClick={configureMediaDevices} >
+        {/* <Button className="mx-2" variant="secondary" onClick={configureMediaDevices} >
           Configure audio/video
-        </Button>
+        </Button> */}
         <Button variant="success" onClick={beginChat}>
           Begin study
         </Button>

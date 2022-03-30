@@ -1,7 +1,7 @@
 import React, { createRef, useEffect, useRef, useState } from "react";
 import AppConstants from "../AppConstants";
 import SpeechBubble from "./SpeechBubble";
-
+import ScrollToBottom from 'react-scroll-to-bottom';
 
 const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers, onSend, messageEditType}) => {
   const senderUserId = currentUserId;
@@ -33,13 +33,13 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers, onS
         delete inProgressCopy[displayCaptions.userId];
         setCaptions(captionsCopy);
         setInProgress(inProgressCopy);
-        scrollToMyRef();
+        //scrollToMyRef();
       } else {
         const inProgressCopy = {};
         Object.assign(inProgressCopy, inProgress);
         inProgressCopy[displayCaptions.userId] = message;
         setInProgress(inProgressCopy);
-        scrollToMyRef();
+        //scrollToMyRef();
       }
     }
 
@@ -79,9 +79,10 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers, onS
   }
 
   return (
-    <div ref={messagesContainer} className="h-100" style={{overflow:"auto"}}>
-      {renderCaptionContainer()}
-    </div>
+    <ScrollToBottom className='h-100'>{renderCaptionContainer()}</ScrollToBottom>
+    // <div ref={messagesContainer} className="h-100" style={{overflow:"auto"}}>
+    //   {renderCaptionContainer()}
+    // </div>
   );
 }
 

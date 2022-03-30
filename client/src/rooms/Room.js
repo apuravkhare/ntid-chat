@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, } from "react";
+import { useHistory } from "react-router";
 import io from "socket.io-client";
 import Peer from "simple-peer";
 import styled from "styled-components";
@@ -22,6 +23,11 @@ const StyledVideo = styled.video`
     max-width: 100%;
 `;
 
+const Styledbutton = styled.button`
+    background-color: #2eb82e;
+    border-radius: 7px;
+`;
+
 const Caption = styled.p`
     background-color: #2a2a2e;
     color: white;
@@ -29,6 +35,7 @@ const Caption = styled.p`
     margin-bottom: auto;
     border-radius: 3px;
 `;
+
 
 const Video = ({peer, onActionSelect}) => {
     const ref = useRef();
@@ -128,7 +135,7 @@ const Room = (props) => {
     let processor = useRef();
     let audioStream = useRef();
     let input = useRef();
-    
+    let history = useHistory();
     useEffect(() => {
         const hasGetUserMedia = !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
             navigator.mozGetUserMedia || navigator.msGetUserMedia || (navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
@@ -319,6 +326,9 @@ const Room = (props) => {
                             </span> */}
                             <span className="chat-fa-text-chat-icon" onClick = {change}>
                                 <FontAwesomeIcon icon={faTextHeight} size="lg"  />
+                            </span>
+                            <span  style= {{float: "right"}}>
+                                <Styledbutton onClick={()=>{history.push("/ExitRoom")}}>Leave</Styledbutton>
                             </span>
                         </div>
                     </Row>

@@ -3,7 +3,7 @@ import { useHistory } from "react-router";
 import { Button, Card, Form, ListGroup, ListGroupItem } from "react-bootstrap";
 import AppUtil from "../util/AppUtil";
 import AppConstants from "../AppConstants";
-import WaveSurfer from "wavesurfer.js";
+import AudioVisualizer from "../util/AudioVisualizer";
 
 const RoomLandingPage = (props) => {
 
@@ -12,29 +12,27 @@ const RoomLandingPage = (props) => {
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [selectedVideoDevice, setSelectedVideoDevice] = useState();
   const [selectedAudioDevice, setSelectedAudioDevice] = useState();
+  const [roomID, roomOptions] = AppUtil.getQueryParams(props);
   const userVideo = useRef();
-  const waveformRef = useRef(null);
-  const waveSurfer = useRef(null);
+  const userAudio = useRef();
+  const userAudioStream = useRef();
 
   const history = useHistory();
   function beginChat() {
     history.push({
       pathname: `/room/${props.match.params.roomID}`,
       search: props.location.search,
+      state: { selectedAudioDevice: selectedAudioDevice, selectedVideoDevice: selectedVideoDevice }
       // state: { roomID: props.match.params.roomID }
     })
     // props.history.push(`/room/${id}`);
   }
 
-  useEffect(() => {
-    if (waveformRef.current) {
-      waveSurfer.current = WaveSurfer.create({ container: waveformRef.current });
-  
-      // Removes events, elements and disconnects Web Audio nodes.
-      // when component unmount
-      return () => waveSurfer.current.destroy();
-    }
-  }, []);
+  // useEffect(() => {
+  //   return () => {
+  //     window.stream.getTracks().forEach(track => track.stop());
+  //   }
+  // }, [])
 
   function showErrorMessage(error) {
     console.error(error);
@@ -74,10 +72,6 @@ const RoomLandingPage = (props) => {
   }
 
   function changeInputs(audioDeviceId, videoDeviceId) {
-    console.log("Change Inputs: ");
-    console.log(audioDeviceId);
-    console.log("Change Inputs: " + videoDeviceId);
-
     if (window.stream) {
       window.stream.getTracks().forEach(track => { track.stop(); });
     }
@@ -92,7 +86,12 @@ const RoomLandingPage = (props) => {
 
     navigator.mediaDevices.getUserMedia(constraints).then(stream => {
       window.stream = stream; // make stream available to console
-      userVideo.current.srcObject = stream;
+
+      if (roomOptions.video) {
+        userVideo.current.srcObject = stream;
+      }
+      
+      userAudioStream.current = new MediaStream(stream.getAudioTracks());
       // Refresh button list in case labels have become available
       return navigator.mediaDevices.enumerateDevices();
     }).then(devices => gotDevices(devices))
@@ -116,23 +115,30 @@ const RoomLandingPage = (props) => {
           {/* Please allow those and select the audio/video devices that you'd like to use. */}
           </Card.Subtitle>
           <ListGroup>
+            {roomOptions.video &&
+              <ListGroupItem>
+                <div className="h-25 m-auto" >
+                  <video className="h-100" style={{ maxHeight: "250px" }} ref={userVideo} muted playsInline autoPlay></video>
+                </div>
+                <div>
+                  <Form.Label htmlFor="app-select-video" >Select Video:</Form.Label>
+                  <Form.Select id="app-select-video" onChange={e => changeInputs(null, e.target.value)} >
+                    {getVideoDeviceOptions()}
+                  </Form.Select>
+                </div>
+              </ListGroupItem>
+            }
             <ListGroupItem>
-              <div className="h-25 m-auto" >
-                <video className="h-100" style={{maxHeight: "250px"}} ref={userVideo} muted playsInline autoPlay></video>
+              <audio playsInline autoPlay ref={userAudio}></audio>
+              <div style={{height: "10%"}} >
+                <AudioVisualizer audioStream={userAudioStream.current} />
               </div>
               <div>
-                <Form.Label htmlFor="app-select-video" >Select Video:</Form.Label>
-                <Form.Select id="app-select-video" onChange={e => changeInputs(null, e.target.value)} >
-                  {getVideoDeviceOptions()}
+                <Form.Label htmlFor="app-select-audio" >Select Audio:</Form.Label>
+                <Form.Select id="app-select-audio" onChange={e => changeInputs(e.target.value, null)} >
+                  {getAudioDeviceOptions()}
                 </Form.Select>
               </div>
-            </ListGroupItem>
-            <ListGroupItem>
-              <div ref={waveformRef} />
-              <Form.Label htmlFor="app-select-audio" >Select Audio:</Form.Label>
-              <Form.Select id="app-select-audio" onChange={e => changeInputs(e.target.value, null)} >
-                {getAudioDeviceOptions()}
-              </Form.Select>
             </ListGroupItem>
           </ListGroup>
 
@@ -153,14 +159,17 @@ const RoomLandingPage = (props) => {
     return (
       <div className="text-center welcome">
         <h3>VoIP Chat Application</h3>
-        <p className="lead">This application requires access to your microphone to proceed with the study. Click on the 'Begin Study' button below to provide this access, and begin the study.</p>
-        {/* <Redirect from = "/room_/:id" to = "/room/:id" />
-          <Route path="/room/:id">
-  
-          </Route> */}
-        {/* <Button className="mx-2" variant="secondary" onClick={configureMediaDevices} >
-          Configure audio/video
-        </Button> */}
+        <p className="lead">This application requires access to your microphone to proceed with the study.</p>
+        {/* <p className="lead">Click on the 'Begin Study' button below to provide this access, and begin the study.</p> */}
+        <span className="lead">Click on the </span><Button variant="success" size="sm" disabled>Begin study</Button><span className="lead"> button below to provide this access, and begin the study.</span>
+        <br/>
+        <span className="lead">Click on the </span><Button variant="outline-primary" size="sm" disabled>Configure</Button><span className="lead"> button below to test or change your microphone.</span>
+        <br/>
+        <br/>
+
+        <Button className="mx-2" variant="outline-primary" onClick={configureMediaDevices}>
+          Configure
+        </Button>
         <Button variant="success" onClick={beginChat}>
           Begin study
         </Button>

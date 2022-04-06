@@ -1,5 +1,6 @@
 import { toast } from 'react-toastify';
 import AppConstants from '../AppConstants';
+import { parse } from 'querystring';
 
 class AppUtil {
   createNotification(message, type) {
@@ -20,6 +21,16 @@ class AppUtil {
         toast(message);
         break;
     }
+  }
+
+  getQueryParams(props) {
+    const parsed = parse(props.location.search.replace("?", ""));
+    parsed.video = (parsed.video === "true");
+    parsed.showCaptions = (parsed.captions === "true");
+    parsed.identifySpeakers = (parsed.idSpeaker === "true");
+    parsed.generateCaptions = (parsed.genCaptions === "true");
+    parsed.messageEditType = parsed.edit;
+    return [props.match.params.roomID, parsed];
   }
 }
 

@@ -130,7 +130,7 @@ const CreateRoom = (props) => {
                             <Form.Check id="app-id-speaker" type="switch" checked={queryParams['idSpeaker']} onChange={toggleIdentifySpeaker} label="Identify Speakers" style={{display: !!queryParams["video"] ? "inherit" : "none"}} />
 
                             <label form="app-message-edit-type" style={{display: !!queryParams["video"] ? "inherit" : "none"}}>Edit messages:</label>
-                            <ButtonGroup id="app-message-edit-type" style={{display: !!queryParams["video"] ? "inherit" : "none"}}>
+                            <ButtonGroup id="app-message-edit-type" style={{display: !!queryParams["video"] ? "inherit" : "none"}} size="sm">
                                 <ToggleButton id="message-edit-type-new" type="radio" variant="outline-primary" value="new" onChange={(e) => changeMessageEditType(e.currentTarget.value)} checked={messageEditType==="new"}>
                                     Create new
                                 </ToggleButton>

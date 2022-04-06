@@ -4,7 +4,6 @@ import io from "socket.io-client";
 import Peer from "simple-peer";
 import styled from "styled-components";
 import "../util/room.css";
-import { parse } from 'querystring';
 import { faClosedCaptioning, faCommentAlt, faEllipsisV, faMicrophone,faTextHeight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Col, Container, Dropdown, Form, Navbar, Row } from "react-bootstrap";
@@ -53,12 +52,13 @@ const Video = ({peer, onActionSelect}) => {
             &nbsp;Options
         </span> */}
             <Dropdown style={{ position: "absolute", marginTop: "1em", marginLeft: "1em", zIndex: "999" }} onSelect={(eventKey, event) => onActionSelect(eventKey)}>
-                <Dropdown.Toggle variant="outline-secondary">
+                <Dropdown.Toggle variant="outline-secondary" size="sm">
                     Options
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                     <Dropdown.Item eventKey={AppConstants.videoNotificationOptions.speakUp}>Speak Up</Dropdown.Item>
                     <Dropdown.Item eventKey={AppConstants.videoNotificationOptions.slowDown}>Slow Down</Dropdown.Item>
+                    <Dropdown.Item eventKey={AppConstants.videoNotificationOptions.speakClearer}>Speak Clearer</Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>
             <StyledVideo playsInline autoPlay ref={ref} >
@@ -129,13 +129,15 @@ const Room = (props) => {
     const userVideo = useRef();
     const userAudio = useRef();
     const peersRef = useRef([]);
-    const [roomID, roomOptions] = getQueryParams();
+    const [roomID, roomOptions] = AppUtil.getQueryParams(props);
+    const history = useHistory();
+    const selectedDevices = history.location.state;
     let AudioContext = useRef();
     let context = useRef();
     let processor = useRef();
     let audioStream = useRef();
     let input = useRef();
-    let history = useHistory();
+
     useEffect(() => {
         const hasGetUserMedia = !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
             navigator.mozGetUserMedia || navigator.msGetUserMedia || (navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
@@ -144,8 +146,7 @@ const Room = (props) => {
             AppUtil.createNotification("This browser does not support streaming audio/video.", AppConstants.notificationType.error);
             return;
         }
-        
-        console.log('Room - useEffect');
+
         socketRef.current = io.connect("/");
         AudioContext.current = window.AudioContext || window.webkitAudioContext;
         context.current = new AudioContext.current();
@@ -157,7 +158,11 @@ const Room = (props) => {
             return false;
         }
 
-        navigator.mediaDevices.getUserMedia({ video: roomOptions.video ? videoConstraints : false, audio: audioConstraints }).then(stream => {
+        const selectedVideoConstraints = !!selectedDevices.selectedVideoDevice ? { ...videoConstraints, deviceId: selectedDevices.selectedVideoDevice } : videoConstraints;
+        const selectedAudioConstraints = !!selectedDevices.selectedAudioDevice ? { ...audioConstraints, deviceId: selectedDevices.selectedAudioDevice } : 
+        audioConstraints;
+
+        navigator.mediaDevices.getUserMedia({ video: roomOptions.video ? selectedVideoConstraints : false, audio: selectedAudioConstraints }).then(stream => {
             audioStream.current = new MediaStream(stream.getAudioTracks());
             input.current = context.current.createMediaStreamSource(audioStream.current);
             input.current.connect(processor.current);
@@ -229,17 +234,6 @@ const Room = (props) => {
 
     function change(){
         setFontSizeIndex(current => current === allowedFontSizes.length - 1 ? 0 : current + 1)
-    }
-
-    function getQueryParams(qs) {
-        const parsed = parse(props.location.search.replace("?", ""));
-        parsed.video = (parsed.video === "true");
-        parsed.showCaptions = (parsed.captions === "true");
-        parsed.identifySpeakers = (parsed.idSpeaker === "true");
-        parsed.generateCaptions = (parsed.genCaptions === "true");
-        parsed.messageEditType = parsed.edit;
-        return [props.match.params.roomID, parsed];
-        // return [props.location.state.roomID, parsed];
     }
 
     function updateCaptions(payload) {
@@ -346,6 +340,9 @@ const Room = (props) => {
         
             case AppConstants.videoNotificationOptions.speakUp:
                 socketRef.current.emit("notifyPeer", { peerId: peerID, type: AppConstants.notificationType.warning, message: "Please speak up to improve the captioning accuracy." });
+                break;
+            case AppConstants.videoNotificationOptions.speakClearer:
+                socketRef.current.emit("notifyPeer", { peerId: peerID, type: AppConstants.notificationType.warning, message: "Please speak more clearly to improve the captioning accuracy." });
                 break;
         }
         

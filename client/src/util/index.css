@@ -1,4 +1,7 @@
 html, body, #root, .App {
+  --toastify-color-warning: #ffa825;
+  /* --toastify-color-warning: linear-gradient(to right, orange , yellow, green, cyan, blue, violet); */
+  --toastify-text-color-warning: #111;
   height: 100%;
   overflow: hidden;
   background-color: #ebebed;

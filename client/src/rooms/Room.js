@@ -6,7 +6,7 @@ import styled from "styled-components";
 import "../util/room.css";
 import { faClosedCaptioning, faCommentAlt, faEllipsisV, faMicrophone,faTextHeight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Col, Container, Dropdown, Form, Navbar, Row } from "react-bootstrap";
+import { Button, Col, Container, Dropdown, Form, Navbar, Row } from "react-bootstrap";
 import TextChat from "./TextChat";
 import ScrollingCaption from "./ScrollingCaption";
 import ErrorModal from "../util/ErrorModal";
@@ -312,7 +312,7 @@ const Room = (props) => {
                 <Container>
                     <Row className="w-100">
                         <div className="p-0">
-                            <TextChat onSend={sendTypedMessage} fontSize={allowedFontSizes[fontSizeIndex]}></TextChat>
+                            {(roomOptions.Video || roomOptions.admin) && <TextChat onSend={sendTypedMessage} fontSize={allowedFontSizes[fontSizeIndex]}></TextChat>}
                             {/* TODO: Enable below after adding a mode for synchronized talking */}
                             {/* <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
                                 <FontAwesomeIcon icon={faMicrophone} size="lg" />
@@ -321,9 +321,10 @@ const Room = (props) => {
                             <span className="chat-fa-text-chat-icon" onClick = {change}>
                                 <FontAwesomeIcon icon={faTextHeight} size="lg"  />
                             </span>
-                            <span  style= {{float: "right"}}>
+                            {/* <span  style= {{float: "right"}}>
                                 <Styledbutton onClick={()=>{history.push("/ExitRoom")}}>Leave</Styledbutton>
-                            </span>
+                            </span> */}
+                            <Button style={{float: "right"}} variant="danger" onClick={()=> history.push("/ExitRoom")}>Exit</Button>
                         </div>
                     </Row>
                 </Container>
@@ -416,7 +417,7 @@ const Room = (props) => {
                 </Col>
             </Row>
         </Container>
-        {roomOptions.video ? renderOptions() : <></>}
+        {renderOptions()}
         </>
     );
 };

@@ -30,6 +30,7 @@ class AppUtil {
     parsed.identifySpeakers = (parsed.idSpeaker === "true");
     parsed.generateCaptions = (parsed.genCaptions === "true");
     parsed.messageEditType = parsed.edit;
+    parsed.admin = (parsed.admin === "true");
     return [props.match.params.roomID, parsed];
   }
 }

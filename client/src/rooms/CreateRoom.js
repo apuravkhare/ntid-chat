@@ -165,7 +165,6 @@ const CreateRoom = (props) => {
                 const formattedData = data["messages"]
                 .map(msg => JSON.parse(msg))
                 .filter(msg => msg.results && msg.results[0] && msg.results[0]["alternatives"] && msg.results[0]["alternatives"].length > 0)
-                // .map(msg => msg.results[0])
                 .map(msg => { return {
                     "id": msg["id"],
                     "userId": msg["userId"],

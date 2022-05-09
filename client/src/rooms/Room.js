@@ -309,7 +309,7 @@ const Room = (props) => {
                 <Container>
                     <Row className="w-100">
                         <div className="p-0">
-                            {(roomOptions.Video || roomOptions.admin) && <TextChat onSend={sendTypedMessage} fontSize={allowedFontSizes[fontSizeIndex]}></TextChat>}
+                            {(roomOptions.video || roomOptions.admin) && <TextChat onSend={sendTypedMessage} fontSize={allowedFontSizes[fontSizeIndex]}></TextChat>}
                             {/* TODO: Enable below after adding a mode for synchronized talking */}
                             {/* <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
                                 <FontAwesomeIcon icon={faMicrophone} size="lg" />

@@ -122,7 +122,6 @@ const Room = (props) => {
     const [peers, setPeers] = useState([]);
     const [asrResult, setAsrResult] = useState();
     const isMuted = useRef(false);
-    // const [canBeginChat, setCanBeginChat] = useState(false);
     const socketRef = useRef();
     const userVideo = useRef();
     const userAudio = useRef();

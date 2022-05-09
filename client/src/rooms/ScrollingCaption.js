@@ -32,13 +32,11 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers, onS
         delete inProgressCopy[displayCaptions.userId];
         setCaptions(captionsCopy);
         setInProgress(inProgressCopy);
-        //scrollToMyRef();
       } else {
         const inProgressCopy = {};
         Object.assign(inProgressCopy, inProgress);
         inProgressCopy[displayCaptions.userId] = message;
         setInProgress(inProgressCopy);
-        //scrollToMyRef();
       }
     }
 

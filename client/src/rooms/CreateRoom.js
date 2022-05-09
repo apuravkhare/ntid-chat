@@ -187,7 +187,6 @@ const CreateRoom = (props) => {
                     useTextFile: false,
                     useBom: true,
                     useKeysAsHeaders: true,
-                    // headers: ['Column 1', 'Column 2', etc...] <-- Won't work with useKeysAsHeaders present!
                 };
 
                 // var x = {"results":[{"alternatives":[{"words":[{"startTime":{"seconds":"10","nanos":400000000},"endTime":{"seconds":"10","nanos":900000000},"word":"second","speakerTag":0},{"startTime":{"seconds":"10","nanos":900000000},"endTime":{"seconds":"11","nanos":200000000},"word":"user","speakerTag":0}],"transcript":"second user","confidence":0.9391394853591919}],"isFinal":true,"stability":0,"resultEndTime":{"seconds":"11","nanos":800000000},"channelTag":0,"languageCode":"en-us"}],"error":null,"speechEventType":"SPEECH_EVENT_UNSPECIFIED","totalBilledTime":{"seconds":"15","nanos":0},"speakerIndex":2,"userId":"8_tGECG-1TOV86JpAAAD","type":"ASR","id":"4cc4efbc-0949-4d61-8196-34961b505154"}
@@ -258,7 +257,6 @@ const CreateRoom = (props) => {
                     <Modal.Title>Download Transcripts</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{maxHeight:"50vh", overflowY:"scroll"}}>
-                    {/* Woohoo, you're reading this text in a modal! */}
                     {renderTranscriptsTable()}
                 </Modal.Body>
                 <Modal.Footer>

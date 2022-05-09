@@ -17,10 +17,13 @@ const speech = require('@google-cloud/speech');
 const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require('constants');
 
 const Peer = require('simple-peer');
+const { DbRepository } = require('./dbRepository');
 //const wrtc = require('wrtc');
 
 // Creates a client
 const speechClient = new speech.SpeechClient();
+
+const dbRepository = new DbRepository();
 
 /**
  * TODO(developer): Uncomment the following lines before running the sample.
@@ -72,6 +75,8 @@ io.on('connection', socket => {
         console.log(`User ${socket.id} has joined the room`);
 
         socket.emit("all users", usersInThisRoom);
+        
+        dbRepository.addNewLog(roomID, users[roomID]);
     });
 
     socket.on("sending signal", payload => {
@@ -188,6 +193,11 @@ io.on('connection', socket => {
               users[socketToRoom[client.id]].forEach(socketId => {
                 io.to(socketId).emit('speechData', data);
               });
+
+              if (data.results[0] && data.results[0].isFinal) {
+                dbRepository.addMessage(socketToRoom[client.id], JSON.stringify(data));
+              }
+
               // client.emit('speechData', data);
 
               // if end of utterance, let's restart stream
@@ -232,6 +242,25 @@ io.on('connection', socket => {
       return uuidv4();
     }
 
+});
+
+app.get("/api/transcript", function (request, response) {
+  dbRepository.getLogs().then(data => {
+    response.json(data);
+  }).catch(error => {
+    console.log(error);
+    response.status(500).send(error);
+  });
+});
+
+app.get("/api/download", function (request, response) {
+  const id = request.query.id;
+  const doc = dbRepository.getLog(id).then(data => {
+    response.json(data);
+  }).catch(error => {
+    console.log(error);
+    response.status(500).send(error);
+  });
 });
 
 // function startRecognitionStream(client, GCSServiceAccount, request) {

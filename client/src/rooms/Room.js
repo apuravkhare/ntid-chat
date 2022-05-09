@@ -120,9 +120,7 @@ const iceServersConfig = [
 const Room = (props) => {
     const [fontSizeIndex, setFontSizeIndex] = useState(2);
     const [peers, setPeers] = useState([]);
-    const [captions, setCaptions] = useState("");
     const [asrResult, setAsrResult] = useState();
-    const [errorMsg, setErrorMsg] = useState("");
     const isMuted = useRef(false);
     // const [canBeginChat, setCanBeginChat] = useState(false);
     const socketRef = useRef();
@@ -324,7 +322,10 @@ const Room = (props) => {
                             {/* <span  style= {{float: "right"}}>
                                 <Styledbutton onClick={()=>{history.push("/ExitRoom")}}>Leave</Styledbutton>
                             </span> */}
-                            <Button style={{float: "right"}} variant="danger" onClick={()=> history.push("/ExitRoom")}>Exit</Button>
+                            <span>
+                                <Button style={{ float: "right" }} variant="danger" onClick={() => history.push("/ExitRoom")}>Exit</Button>
+                                {roomOptions.admin && <Button style={{ float: "right" }} variant="primary">Intervene</Button>}
+                            </span>
                         </div>
                     </Row>
                 </Container>
@@ -375,6 +376,20 @@ const Room = (props) => {
                     {/* <FontAwesomeIcon icon={faMicrophone} className="chat-fa-icon" size="lg" /> */}
                     <audio muted playsInline autoPlay ref={userAudio}></audio>
                 {/* All other audio */}
+                {peers.map((peer, index) => {
+                    return (
+                        <Audio peer={peer} key={"audio-" + index} autoPlay playsInline />
+                    );
+                })}
+            </Col>
+        )
+    }
+
+    function renderAdmin() {
+        return (
+            <Col>
+                <p className="text-dark text-opacity-75 float-end">{(peers && peers.length ? peers.length + 1 : 1) + " user(s) in this room"}</p>
+                {/* Only render other users' audio */}
                 {peers.map((peer, index) => {
                     return (
                         <Audio peer={peer} key={"audio-" + index} autoPlay playsInline />

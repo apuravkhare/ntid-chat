@@ -2,10 +2,15 @@ import React, { useState } from "react";
 import { v1 as uuid } from "uuid";
 import "../util/room.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCopy } from '@fortawesome/free-solid-svg-icons';
-import { Button, ButtonGroup, Dropdown, Form, FormCheck, OverlayTrigger, ToggleButton, Tooltip } from 'react-bootstrap';
+import { faCopy, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { Button, ButtonGroup, Dropdown, Form, FormCheck, Modal, OverlayTrigger, Table, ToggleButton, Tooltip } from 'react-bootstrap';
 import { stringify } from "querystring";
 import {CopyToClipboard} from 'react-copy-to-clipboard';
+import AppUtil from "../util/AppUtil";
+import AppConstants from "../AppConstants";
+import Moment from "react-moment";
+import { ExportToCsv } from 'export-to-csv';
+import moment from 'moment';
 
 const CreateRoom = (props) => {
     const [roomId, setRoomId] = useState("");
@@ -13,6 +18,8 @@ const CreateRoom = (props) => {
     const [queryParams, setQueryParams] = useState(genQueryParams());
     const [copyBtnToolTipText, setCopyBtnToolTipText] = useState("Copy Room ID");
     const [audioModeParticipantType, setAudioModeParticipantType] = useState("hh");
+    const [showTranscripts, setShowTranscripts] = useState(false);
+    const [transcripts, setTranscripts] = useState([]);
 
     function genQueryParams(video = false, captions = false, genCaptions = false, idSpeaker = false, edit = "none", admin = false) {
         return { video: video, captions: captions, genCaptions: genCaptions, idSpeaker: idSpeaker, edit: edit, admin: admin }
@@ -84,6 +91,27 @@ const CreateRoom = (props) => {
         </>);
     }
 
+    function downloadTranscripts() {
+        fetch("/api/transcript", {
+            method: 'GET'
+        }).then(response => {
+            response.json().then(data => {
+                setTranscripts(data); 
+                setShowTranscripts(true);
+            }).catch(error => {
+                console.error(error);
+                AppUtil.createNotification("An error occurred while trying to fetch the transcripts. Please contact administrator.", AppConstants.notificationType.error);
+            });
+        }).catch(error => {
+            console.error(error);
+            AppUtil.createNotification("An error occurred while trying to fetch the transcripts. Please contact administrator.", AppConstants.notificationType.error);
+        });
+    }
+
+    function handleModalClose() {
+        setShowTranscripts(false);
+    }
+
     function renderCaptionPhoneOptions() {
         return (
             <>
@@ -92,7 +120,7 @@ const CreateRoom = (props) => {
                 <label htmlFor="app-room-id-h">Hearing Participant:</label>
                 <div id="app-room-id-h">{renderUriBox(genQueryParams(false, false, true, false, "none"))}</div>
                 <label htmlFor="app-room-id-admin">Overseer:</label>
-                <div id="app-room-id-admin">{renderUriBox(genQueryParams(false, true, false, false, "none", true))}</div>
+                <div id="app-room-id-admin">{renderUriBox(genQueryParams(false, true, false, false, "inline", true))}</div>
             </>);
     }
 
@@ -129,30 +157,117 @@ const CreateRoom = (props) => {
         );
     }
 
-    return (
-        <div className="text-center welcome">
-            <h3>VoIP Chat Application</h3>
-            <p className="lead">Simulation of Internet-protocol captioned telephone service (IP-CTS) research tool</p>
-            <br />
-            <div>
-                <Dropdown onSelect={(eventKey, event) => createNewRoomId(eventKey)}>
-                    <Dropdown.Toggle variant="success" id="dropdown-basic">
-                        Generate New Room Token
-                    </Dropdown.Toggle>
+    function downloadTranscript(id, timestamp) {
+        fetch("/api/download?" + new URLSearchParams({ id: id }), {
+            method: 'GET'
+        }).then(response => {
+            response.json().then(data => {
+                const formattedData = data["messages"]
+                .map(msg => JSON.parse(msg))
+                .filter(msg => msg.results && msg.results[0] && msg.results[0]["alternatives"] && msg.results[0]["alternatives"].length > 0)
+                // .map(msg => msg.results[0])
+                .map(msg => { return {
+                    "id": msg["id"],
+                    "userId": msg["userId"],
+                    "transcript": msg.results[0].alternatives.map(alt => alt.transcript).join(" "),
+                    "type": msg["type"],
+                    "confidence": msg.results[0].alternatives.map(alt => alt["confidence"]).reduce((acc, conf) => acc > conf ? acc : conf, 0.0),
+                    "resultEndTime": msg.results[0]["resultEndTime"]["nanos"]
+                 }
+                });
 
-                    <Dropdown.Menu>
-                        <Dropdown.Item eventKey="audio">Captioned Phone</Dropdown.Item>
-                        <Dropdown.Item eventKey="video">Video Chat</Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
+                const options = {
+                    fieldSeparator: ',',
+                    filename: moment(timestamp).format("MMM DD YYYY, hh-mm-ss"),
+                    quoteStrings: '"',
+                    decimalSeparator: '.',
+                    showLabels: true,
+                    showTitle: true,
+                    title: moment(timestamp).format("MMM DD YYYY, hh-mm-ss"),
+                    useTextFile: false,
+                    useBom: true,
+                    useKeysAsHeaders: true,
+                    // headers: ['Column 1', 'Column 2', etc...] <-- Won't work with useKeysAsHeaders present!
+                };
+
+                // var x = {"results":[{"alternatives":[{"words":[{"startTime":{"seconds":"10","nanos":400000000},"endTime":{"seconds":"10","nanos":900000000},"word":"second","speakerTag":0},{"startTime":{"seconds":"10","nanos":900000000},"endTime":{"seconds":"11","nanos":200000000},"word":"user","speakerTag":0}],"transcript":"second user","confidence":0.9391394853591919}],"isFinal":true,"stability":0,"resultEndTime":{"seconds":"11","nanos":800000000},"channelTag":0,"languageCode":"en-us"}],"error":null,"speechEventType":"SPEECH_EVENT_UNSPECIFIED","totalBilledTime":{"seconds":"15","nanos":0},"speakerIndex":2,"userId":"8_tGECG-1TOV86JpAAAD","type":"ASR","id":"4cc4efbc-0949-4d61-8196-34961b505154"}
+
+                const csvExporter = new ExportToCsv(options);
+                csvExporter.generateCsv(formattedData);
+            }).catch(error => {
+                console.error(error);
+                AppUtil.createNotification("An error occurred while trying to download the transcripts. Please contact administrator.", AppConstants.notificationType.error);
+            });
+        }).catch(error => {
+            console.error(error);
+            AppUtil.createNotification("An error occurred while trying to download the transcripts. Please contact administrator.", AppConstants.notificationType.error);
+        })
+    }
+
+    function renderTranscriptsTable() {
+        return (
+            <Table bordered size="sm">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {(transcripts && transcripts.length > 0) ? transcripts.map((tr, index) =>
+                        <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td><Moment format="MMM DD YYYY, hh:mm:ss">{tr["timestamp"]}</Moment></td>
+                            <td><FontAwesomeIcon title="Download" className="chat-fa-icon" icon={faDownload} onClick={() => downloadTranscript(tr["id"], tr["timestamp"])} /></td>
+                        </tr>)
+                        : <></>}
+                </tbody>
+            </Table>);
+    }
+
+    return (
+        <>
+            <div className="text-center welcome">
+                <h3>VoIP Chat Application</h3>
+                <p className="lead">Simulation of Internet-protocol captioned telephone service (IP-CTS) research tool</p>
+                <br />
+                <span className="home-screen-buttons-container">
+                    <Dropdown onSelect={(eventKey, event) => createNewRoomId(eventKey)}>
+                        <Dropdown.Toggle variant="success" id="dropdown-basic">
+                            Generate New Room Token
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu>
+                            <Dropdown.Item eventKey="audio">Captioned Phone</Dropdown.Item>
+                            <Dropdown.Item eventKey="video">Video Chat</Dropdown.Item>
+                        </Dropdown.Menu>
+                    </Dropdown>
+                    <Button variant="secondary" onClick={downloadTranscripts}>Download Transcripts</Button>
+                </span> 
+                {/* <button className="btn btn-success btn-lg" onClick={create}>Generate New Room Token</button> */}
+                <div hidden={!roomId} style={{ marginTop: "1em" }}>
+                    <p className="lead">Use the options below to create shareable tokens with altered room permissions.
+                    </p>
+                    {!!queryParams["video"] ? renderVideoOptions() : renderCaptionPhoneOptions()}
+                </div>
             </div>
-            {/* <button className="btn btn-success btn-lg" onClick={create}>Generate New Room Token</button> */}
-            <div hidden={!roomId} style={{marginTop: "1em"}}>
-                <p className="lead">Use the options below to create shareable tokens with altered room permissions.
-                </p>
-                {!!queryParams["video"] ? renderVideoOptions() : renderCaptionPhoneOptions()}
-            </div>
-        </div>
+
+            <Modal show={showTranscripts} onHide={handleModalClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Download Transcripts</Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{maxHeight:"50vh", overflowY:"scroll"}}>
+                    {/* Woohoo, you're reading this text in a modal! */}
+                    {renderTranscriptsTable()}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleModalClose}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     );
 };
 

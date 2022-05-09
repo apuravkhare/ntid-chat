@@ -11,7 +11,6 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers, onS
   let messagesContainer = createRef();
 
   useEffect(() => {
-    // console.log('updating captions: ' + JSON.stringify(displayCaptions));
     if (displayCaptions && displayCaptions.results && displayCaptions.results[0]) {
       const message = displayCaptions.results[0].alternatives.map(alt => alt.transcript).join(" ");
       if (displayCaptions.results[0].isFinal) {

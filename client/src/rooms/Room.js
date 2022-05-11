@@ -101,6 +101,11 @@ const iceServersConfig = [
         urls: "stun:openrelay.metered.ca:80",
     },
     {
+        url: 'turn:numb.viagenie.ca',
+        username: 'webrtc@live.com',
+        credential: 'muazkh',
+    },
+    {
         urls: "turns:openrelay.metered.ca:443",
         username: "openrelayproject",
         credential: "openrelayproject",

@@ -14,6 +14,7 @@
   - [Back-end design](#back-end-design)
   - [Third-party APIs](#third-party-apis)
     - [STUN/TURN servers](#stunturn-servers)
+    - [Google Cloud APIs](#google-cloud-apis)
 
 # Introduction
 Audio/video chat application with real-time captioning. It can be used to simulate either phone or video conversations.
@@ -117,7 +118,16 @@ The application heavily relies on Bootstrap's components, classes, and layout pr
 The application uses various third-party APIs that may need debugging. These are some important areas:
 
 ### STUN/TURN servers
-These are relay servers that help establish a connection between the peers for transmitting audio/video signal. The config is added as a list of servers in Room.js.
+These servers need to be debugged in scenarios where the captions are visible, but the audio/video is not transmitted.
 
-As of May 2022, we've switched to using the free servers provided by [Subspace](https://subspace.com/pricing/webrtc-cdn).
+STUN/TURN servers help establish a connection between the peers for transmitting audio/video signal. The config is added as a list of servers in Room.js.
+
+We used the free servers from the [Open Relay Project](https://www.metered.ca/tools/openrelay/) for a few months, but they started failing to establish a connection around May 2022. As of May 2022, we've switched to using the free servers provided by [Subspace](https://subspace.com/pricing/webrtc-cdn) and [Numb](https://numb.viagenie.ca/).
+
+In case errors observed where audio/video is not transmitted between some or all of the participants, it is worth checking the server status on [Trickle ICE](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/). Add the server config to the form, and click on "Gather Candidates" at the bottom of the screen. A status of "rtcp relay" indicates that the configuration is functional.
+
+### Google Cloud APIs
+Check this service if audio/video is transmitted, but captions are not generated, or there are server errors from the Google Cloud service.
+
+The most common cause of these problems is the environment variables not being set on the deployment machine. The Google Cloud API looks for a JSON file defined under the environment variable "GOOGLE_APPLICATION_CREDENTIALS". We've had issues with environment variables being temporary on Mac OS. You'd have to check the documentation for your respective Operating System version to see how to set persistent environment variables.
 

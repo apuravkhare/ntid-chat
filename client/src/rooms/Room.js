@@ -15,17 +15,12 @@ import { toast } from 'react-toastify';
 import AppConstants from "../AppConstants";
 import AppUtil from "../util/AppUtil";
 
-
 const StyledVideo = styled.video`
     height: 90%;
     margin: 0.5em;
     max-width: 100%;
 `;
 
-const Styledbutton = styled.button`
-    background-color: #2eb82e;
-    border-radius: 7px;
-`;
 
 const Caption = styled.p`
     background-color: #2a2a2e;
@@ -360,13 +355,9 @@ const Room = (props) => {
                             <span className="chat-fa-text-chat-icon" onClick = {change}>
                                 <FontAwesomeIcon icon={faTextHeight} size="lg"  />
                             </span>
-                            {/* <span  style= {{float: "right"}}>
-                                <Styledbutton onClick={()=>{history.push("/ExitRoom")}}>Leave</Styledbutton>
-                            </span> */}
-                            <span>
-                                <Button style={{ float: "right" }} variant="danger" onClick={() => history.push("/ExitRoom")}>Exit</Button>
-                                {roomOptions.admin && <Button style={{ float: "right" }} variant="primary">Intervene</Button>}
-                            </span>
+                            <div style= {{display: "flex"}}>
+                            <div><Button  style={{margin:"10px"}} onClick={()=>{history.push("/ExitRoom")}}>Leave</Button></div>
+                            </div>
                         </div>
                     </Row>
                 </Container>

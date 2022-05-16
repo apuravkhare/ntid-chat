@@ -10,7 +10,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Moment from "react-moment";
 import 'moment-timezone';
-
+import 'bootstrap/dist/css/bootstrap.min.css';
 function App() {
   return (
     <>

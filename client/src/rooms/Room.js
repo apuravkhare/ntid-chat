@@ -111,10 +111,11 @@ const allowedFontSizes = ["small", "medium", "large", "x-large", "xx-large"];
 
 const iceServersConfig = [
     { "username": "1652378158:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "BL5Sw/0WtcdKeeQpz6+N0nFRu3A=", "urls": "turn:globalturn.subspace.com:3478?transport=udp" },
-    { "username": "1652378158:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "BL5Sw/0WtcdKeeQpz6+N0nFRu3A=", "urls": "turn:globalturn.subspace.com:3478?transport=tcp" },
-    { "username": "1652378158:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "BL5Sw/0WtcdKeeQpz6+N0nFRu3A=", "urls": "turns:globalturn.subspace.com:5349?transport=udp" },
-    { "username": "1652378158:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "BL5Sw/0WtcdKeeQpz6+N0nFRu3A=", "urls": "turns:globalturn.subspace.com:5349?transport=tcp" },
-    { "username": "1652378158:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "BL5Sw/0WtcdKeeQpz6+N0nFRu3A=", "urls": "turns:globalturn.subspace.com:443?transport=tcp" }
+    { "url": "turn:numb.viagenie.ca", "username": "ak2816@rit.edu", "credential": "jyBQUMNLuSdxR8n" }
+    // { "username": "1652378158:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "BL5Sw/0WtcdKeeQpz6+N0nFRu3A=", "urls": "turn:globalturn.subspace.com:3478?transport=tcp" },
+    // { "username": "1652378158:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "BL5Sw/0WtcdKeeQpz6+N0nFRu3A=", "urls": "turns:globalturn.subspace.com:5349?transport=udp" },
+    // { "username": "1652378158:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "BL5Sw/0WtcdKeeQpz6+N0nFRu3A=", "urls": "turns:globalturn.subspace.com:5349?transport=tcp" },
+    // { "username": "1652378158:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "BL5Sw/0WtcdKeeQpz6+N0nFRu3A=", "urls": "turns:globalturn.subspace.com:443?transport=tcp" }
 ];
 
 // const iceServersConfig = [

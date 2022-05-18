@@ -356,9 +356,9 @@ const Room = (props) => {
                             <span className="chat-fa-text-chat-icon" onClick = {change}>
                                 <FontAwesomeIcon icon={faTextHeight} size="lg"  />
                             </span>
-                            <div style= {{display: "flex"}}>
-                            <div><Button  style={{margin:"10px"}} onClick={()=>{history.push("/ExitRoom")}}>Leave</Button></div>
-                            </div>
+                            <span>
+                            <Button variant="danger" style={{margin:"10px"}} onClick={()=>{history.push("/ExitRoom")}}>Leave</Button>
+                            </span>
                         </div>
                     </Row>
                 </Container>

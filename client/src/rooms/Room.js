@@ -111,7 +111,7 @@ const iceServersConfig = [
     // { "username": "1652934409:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "4IF0sEFeSHltOVUTxEZo+R+XUEE=", "urls": "turns:globalturn.subspace.com:5349?transport=udp" },
     // { "username": "1652934409:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "4IF0sEFeSHltOVUTxEZo+R+XUEE=", "urls": "turns:globalturn.subspace.com:5349?transport=tcp" },
     // { "username": "1652934409:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "4IF0sEFeSHltOVUTxEZo+R+XUEE=", "urls": "turns:globalturn.subspace.com:443?transport=tcp" },
-    { "url": "turn:numb.viagenie.ca", "username": "ak2816@rit.edu", "credential": "jyBQUMNLuSdxR8n" }
+    // { "url": "turn:numb.viagenie.ca", "username": "ak2816@rit.edu", "credential": "jyBQUMNLuSdxR8n" }
 ];
 
 // const iceServersConfig = [

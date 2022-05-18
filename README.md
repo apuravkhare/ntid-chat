@@ -15,6 +15,7 @@
   - [Third-party APIs](#third-party-apis)
     - [STUN/TURN servers](#stunturn-servers)
     - [Google Cloud APIs](#google-cloud-apis)
+  - [Development protocols](#Development-protocols)
 
 # Introduction
 Audio/video chat application with real-time captioning. It can be used to simulate either phone or video conversations.
@@ -130,4 +131,17 @@ In case errors observed where audio/video is not transmitted between some or all
 Check this service if audio/video is transmitted, but captions are not generated, or there are server errors from the Google Cloud service.
 
 The most common cause of these problems is the environment variables not being set on the deployment machine. The Google Cloud API looks for a JSON file defined under the environment variable "GOOGLE_APPLICATION_CREDENTIALS". We've had issues with environment variables being temporary on Mac OS. You'd have to check the documentation for your respective Operating System version to see how to set persistent environment variables.
+Steps to set the environment variable on Mac OS-
+1. Use printenv to display a list of currently set environment variables.
+2. Find the path to .bash_profile by using: ~/.bash-profile
+   If you cant find your bash profile, press Command + Shift + . and bash_profile will be visible.
+3. Open the .bash_profile file with a text editor of your choice.
+4. Scroll down to the end of the .bash_profile file.
+5. Use the export command to add new environment variables:
+    export [variable_name]=[variable_value]
+  The variable name would be GOOGLE_APPLICATION_CREDENTIALS and the variable value would be the path of the file which stores the service account key.
 
+# Development Protocols
+Ticketing -  we use the [Trello](https://trello.com/) board to keep a track of all the ongoing tasks and to update them periodically as soon as a task is completed.
+Merging - All the changes are carefully studied and verified before merging them into the main branch of the repository. There is only one branch i.e., the main branch.
+Link to github repository - [NTID-chat](https://github.com/apuravkhare/ntid-chat)

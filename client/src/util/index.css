@@ -45,6 +45,63 @@ code {
   color: white;
 }
 
+.chat-fa-text-mic-icon {
+  padding-top: 0.5em;
+  border: 1px solid #666;
+  padding-bottom: 0.5em;
+  padding-left: 0.75em;
+  padding-right: 0.75em;
+  border-radius: 50%;
+  margin: 0.1em;
+  margin-left: 0.1em;
+  background-color: #0d6efd;
+  background-color: #ccc;
+}
+
+.chat-fa-text-mic-icon:hover {
+  cursor: pointer;
+  background-color: #0d99fd;
+  color: white;
+}
+
+.chat-fa-text-mic-icon-enabled {
+  padding-top: 0.5em;
+  border: 1px solid #666;
+  padding-bottom: 0.5em;
+  padding-left: 0.75em;
+  padding-right: 0.75em;
+  border-radius: 50%;
+  margin: 0.1em;
+  margin-left: 0.1em;
+  background-color: #0d6efd;
+  background-color: #ccc;
+  animation: glow-grow 2s ease-out infinite;
+}
+
+.chat-fa-text-mic-icon-enabled:hover {
+  cursor: pointer;
+  background-color: #0d99fd;
+  color: white;
+}
+
+.chat-fa-text-mic-icon-enabled::after {
+  animation-delay: .66s;
+}
+
+@keyframes glow-grow {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
 .chat-fa-text-chat-icon-talking {
   z-index: 999;
   padding-top: 1em;

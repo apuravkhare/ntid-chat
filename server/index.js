@@ -54,7 +54,10 @@ let counter = 0; // for testing when ASR is disabled
 io.on('connection', socket => {
     // let recognizeStream = null;
 
-    socket.on("join room", roomID => {
+    socket.on("join room", params => {
+      const roomID = params["roomID"];
+      const isAsync = params["isAsync"];
+
         if (users[roomID]) {
             const length = users[roomID].length;
             if (length === 3) {
@@ -71,7 +74,9 @@ io.on('connection', socket => {
         // fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', '', { flag: "a+",  encoding: "utf8" });
         
         // commented for test
-        startRecognitionStream(socket);
+        if (isAsync) {
+          startRecognitionStream(socket, true);
+        }
         console.log(`User ${socket.id} has joined the room`);
 
         socket.emit("all users", usersInThisRoom);
@@ -164,7 +169,15 @@ io.on('connection', socket => {
       });
     })
 
-    function startRecognitionStream(client) {
+    socket.on('syncSpeech', function () {
+      if (!socketToRecognitionStream[socket.id]) {
+        startRecognitionStream(socket, false);
+      }
+
+      io.to(socket.id).emit('syncSpeechStarted');
+    })
+
+    function startRecognitionStream(client, isAsync) {
       var recognizeStream = speechClient.streamingRecognize(request)
           .on('error', (err) => {
               console.error('Error when processing audio: ' + (err && err.code ? 'Code: ' + err.code + ' ' : '') + (err && err.details ? err.details : ''));
@@ -173,7 +186,7 @@ io.on('connection', socket => {
               client.emit('googleCloudStreamError', err);
               // stopRecognitionStream();
               console.log('Attempting to restart stream.')
-              startRecognitionStream(client);
+              startRecognitionStream(client, isAsync);
           })
           .on('data', (data) => {
               console.log('Response from Google');
@@ -190,12 +203,23 @@ io.on('connection', socket => {
                 data['id'] = generateMessageId();
               }
 
-              users[socketToRoom[client.id]].forEach(socketId => {
-                io.to(socketId).emit('speechData', data);
-              });
+              if (isAsync) {
+                users[socketToRoom[client.id]].forEach(socketId => {
+                  io.to(socketId).emit('speechData', data);
+                });
+              } else {
+                users[socketToRoom[client.id]].forEach(socketId => {
+                  io.to(socketId).emit('speechDataSync', data);
+                });
+              }
 
               if (data.results[0] && data.results[0].isFinal) {
                 dbRepository.addMessage(socketToRoom[client.id], JSON.stringify(data));
+
+                if (!isAsync) {
+                  stopRecognitionStream(client);
+                  io.to(client.id).emit('syncSpeechEnded');
+                }
               }
 
               // client.emit('speechData', data);

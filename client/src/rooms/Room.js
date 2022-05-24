@@ -159,7 +159,8 @@ const Room = (props) => {
     const [fontSizeIndex, setFontSizeIndex] = useState(2);
     const [peers, setPeers] = useState([]);
     const [asrResult, setAsrResult] = useState();
-    const isMuted = useRef(false);
+    const [asrResultSync, setAsrResultSync] = useState();
+    const isMuted = useRef(true);
     const socketRef = useRef();
     const userVideo = useRef();
     const userAudio = useRef();
@@ -204,7 +205,7 @@ const Room = (props) => {
             processor.current.connect(context.current.destination);
 
             processor.current.onaudioprocess = function (e) {
-                if (!isMuted.current && roomOptions.generateCaptions) {
+                if (((!roomOptions.isAsync && !isMuted.current) || roomOptions.isAsync) && roomOptions.generateCaptions) {
                     microphoneProcess(e);
                 }
             };
@@ -218,7 +219,7 @@ const Room = (props) => {
                 userAudio.current.srcObject = stream;
             }
 
-            socketRef.current.emit("join room", roomID);
+            socketRef.current.emit("join room", { roomID: roomID, isAsync: roomOptions.isAsync });
             socketRef.current.on("all users", users => {
                 const peers = [];
                 users.forEach(userID => {
@@ -254,6 +255,12 @@ const Room = (props) => {
                 }
             })
 
+            socketRef.current.on("speechDataSync", payload => {
+                if (payload) {
+                    updateCaptionsSync(payload);
+                }
+            })
+
             socketRef.current.on("notification", payload => {
                 if (payload) {
                     AppUtil.createNotification(payload.message, payload.type)
@@ -261,6 +268,18 @@ const Room = (props) => {
                     AppUtil.createNotification("An error has occurred. Please contact administrator.")
                 }
             });
+
+            socketRef.current.on("syncSpeechStarted", payload => {
+                isMuted.current = false;
+                setAsrResultSync("");
+            });
+
+            socketRef.current.on("syncSpeechEnded", payload => {
+                isMuted.current = true;
+                AppUtil.createNotification("The sentence is marked complete by the ASR engine. Please click the mic icon to type another message.", AppConstants.notificationType.info);
+                setAsrResultSync("");
+            });
+            
         })
         .catch(error => {
             AppUtil.createNotification("An error occurred while attempting to access your microphone/camera. Please rejoin this room or contact administrator.", AppConstants.notificationType.error);
@@ -269,6 +288,12 @@ const Room = (props) => {
 
     function change(){
         setFontSizeIndex(current => current === allowedFontSizes.length - 1 ? 0 : current + 1)
+    }
+
+    function updateCaptionsSync(payload) {
+        console.debug('Payload received');
+        console.debug('Set ASR Result: ' + JSON.stringify(payload));
+        setAsrResultSync(payload);
     }
 
     function updateCaptions(payload) {
@@ -303,7 +328,7 @@ const Room = (props) => {
     }
 
     function microphoneProcess(e) {
-        console.log('Room - microphone process');
+        // console.log('Room - microphone process');
         var left = e.inputBuffer.getChannelData(0);
         var left16 = convertFloat32ToInt16(left);
         socketRef.current.emit('binaryAudioData', left16);
@@ -341,23 +366,24 @@ const Room = (props) => {
         return peer;
     }
 
+    function onSyncSpeech() {
+        socketRef.current.emit("syncSpeech");
+    }
+
     function renderOptions() {
         return (
             <Navbar bg="light" fixed="bottom">
                 <Container>
                     <Row className="w-100">
                         <div className="p-0">
-                            {(roomOptions.video || roomOptions.admin) && <TextChat onSend={sendTypedMessage} fontSize={allowedFontSizes[fontSizeIndex]}></TextChat>}
+                            {(roomOptions.video || roomOptions.admin) && <TextChat onSend={sendTypedMessage} fontSize={allowedFontSizes[fontSizeIndex]} enableSpeech={!roomOptions.isAsync} onSpeech={onSyncSpeech} externalInput={asrResultSync} isListening={!isMuted.current}></TextChat>}
                             {/* TODO: Enable below after adding a mode for synchronized talking */}
-                            {/* <span className={isMuted.current ? "chat-fa-text-chat-icon" : "chat-fa-text-chat-icon-talking"} onClick={toggleSpeech} >
-                                <FontAwesomeIcon icon={faMicrophone} size="lg" />
-                                <span className="lead" style={{padding: "0.5em"}}>Talk</span>
-                            </span> */}
-                            <span className="chat-fa-text-chat-icon" onClick = {change}>
-                                <FontAwesomeIcon icon={faTextHeight} size="lg"  />
+                            
+                            <span className="chat-fa-text-chat-icon" onClick={change}>
+                                <FontAwesomeIcon icon={faTextHeight} size="lg" />
                             </span>
                             <span>
-                            <Button variant="danger" style={{margin:"10px"}} onClick={()=>{history.push("/ExitRoom")}}>Leave</Button>
+                                <Button variant="danger" style={{ margin: "10px" }} onClick={() => { history.push("/ExitRoom") }}>Leave</Button>
                             </span>
                         </div>
                     </Row>
@@ -434,6 +460,7 @@ const Room = (props) => {
 
     function sendTypedMessage(message) {
         socketRef.current.emit('textMessage', message);
+        isMuted.current = true;
     }
 
     function sendEditedMessage(message, parentMessageId) {

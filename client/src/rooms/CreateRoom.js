@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { v1 as uuid } from "uuid";
 import "../util/room.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCopy, faDownload } from '@fortawesome/free-solid-svg-icons';
-import { Button, ButtonGroup, Dropdown, Form, FormCheck, Modal, OverlayTrigger, Table, ToggleButton, Tooltip } from 'react-bootstrap';
+import { faCopy, faDownload, faEdit, faInfoCircle, faPaperPlane, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import { Button, ButtonGroup, Dropdown, Form, FormCheck, Modal, OverlayTrigger, Tab, Table, ToggleButton, Tooltip } from 'react-bootstrap';
 import { stringify } from "querystring";
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import AppUtil from "../util/AppUtil";
@@ -19,10 +19,11 @@ const CreateRoom = (props) => {
     const [copyBtnToolTipText, setCopyBtnToolTipText] = useState("Copy Room ID");
     const [audioModeParticipantType, setAudioModeParticipantType] = useState("hh");
     const [showTranscripts, setShowTranscripts] = useState(false);
+    const [showOptionsHelp, setShowOptionsHelp] = useState(false);
     const [transcripts, setTranscripts] = useState([]);
 
-    function genQueryParams(video = false, captions = false, genCaptions = false, idSpeaker = false, edit = "none", admin = false) {
-        return { video: video, captions: captions, genCaptions: genCaptions, idSpeaker: idSpeaker, edit: edit, admin: admin }
+    function genQueryParams(video = false, captions = false, genCaptions = false, idSpeaker = false, edit = "none", admin = false, async = true) {
+        return { video: video, captions: captions, genCaptions: genCaptions, idSpeaker: idSpeaker, edit: edit, admin: admin, async: async }
     }
 
     function getFullUri(params) {
@@ -40,10 +41,10 @@ const CreateRoom = (props) => {
         let newRoomId = uuid();
         setRoomId(newRoomId);
         if (eventKey === 'video') {
-            setQueryParams(genQueryParams(true, true, true, true, "inline", false));
+            setQueryParams(genQueryParams(true, true, true, true, "inline", false, true));
         } else {
             // essentially not used currently, but sets a default in case one is needed
-            setQueryParams(genQueryParams(false, true, true, false, "none", false));
+            setQueryParams(genQueryParams(false, true, true, false, "none", false, true));
         }
     }
 
@@ -57,6 +58,10 @@ const CreateRoom = (props) => {
 
     function toggleIdentifySpeaker() {
         setQueryParams({ ...queryParams, idSpeaker: !queryParams.idSpeaker });
+    }
+
+    function toggleAsyncMode() {
+        setQueryParams({ ...queryParams, async: !queryParams.async });
     }
 
     function changeMessageEditType(type) {
@@ -96,7 +101,8 @@ const CreateRoom = (props) => {
             method: 'GET'
         }).then(response => {
             response.json().then(data => {
-                setTranscripts(data); 
+                console.log(data.sort((tr1, tr2) => new Date(tr2["timestamp"]) - new Date(tr1["timestamp"])));
+                setTranscripts(data.sort((tr1, tr2) => new Date(tr2["timestamp"]) - new Date(tr1["timestamp"]))); 
                 setShowTranscripts(true);
             }).catch(error => {
                 console.error(error);
@@ -110,6 +116,10 @@ const CreateRoom = (props) => {
 
     function handleModalClose() {
         setShowTranscripts(false);
+    }
+
+    function handleHelpModalClose() {
+        setShowOptionsHelp(false);
     }
 
     function renderCaptionPhoneOptions() {
@@ -133,6 +143,7 @@ const CreateRoom = (props) => {
                             <Form.Check id="app-display-captions" type="switch" checked={queryParams['captions']} onChange={toggleCaptions} label="Show Captions" />
                             <Form.Check id="app-generate-captions" type="switch" checked={queryParams['genCaptions']} onChange={toggleGenCaptions} label="Generate Captions" />
                             <Form.Check id="app-id-speaker" type="switch" checked={queryParams['idSpeaker']} onChange={toggleIdentifySpeaker} label="Identify Speakers" />
+                            <Form.Check id="app-speaker-async" type="switch" checked={queryParams['async']} onChange={toggleAsyncMode} label="Transcribe asynchronously" />
 
                             <label htmlFor="app-message-edit-type">Edit messages: &nbsp;</label>
                             <ButtonGroup id="app-message-edit-type" size="sm">
@@ -222,6 +233,58 @@ const CreateRoom = (props) => {
             </Table>);
     }
 
+    function renderOptionsHelp() {
+        return (
+            <>
+            <div>
+                The toggles can be used to create shareable links with varying permissions for users in the same room. The options are described below:
+            </div>
+                <Table bordered size="sm">
+                    <thead>
+                        <tr>
+                            <th>Option</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Show Captions</td>
+                            <td>Toggles the display of captions to the user.</td>
+                        </tr>
+                        <tr>
+                            <td>Generate Captions</td>
+                            <td>Toggles whether captions should be generated for the user.</td>
+                        </tr>
+                        <tr>
+                            <td>Identify Speakers</td>
+                            <td>
+                                <p>Toggles whether captions should uniquely identify the speakers.</p>
+                                <p>If <b>enabled</b>, shows unique speaker names at the beginning of each caption. It also right aligns a user's own captions in green speech bubbles, while the other users' captions are left aligned in blue speech bubbles.</p>
+                                <p>If <b>disabled</b>, no names are shown along with the captions, and all messages are left aligned in blue speech bubbles.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Transcribe asynchronously</td>
+                            <td><p>Toggles the mode of message delivery.</p>
+                                <p>If <b>enabled</b>, the speech is transcribed and captions delivered to the all other users in real-time. The application is always listening and continuously transcribing the speech in this mode.</p>
+                                <p>If <b>disabled</b>, the user clicks a button to begin transcription, then clicks the "send" button to share the transcription to all participants.</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Edit messages</td>
+                            <td>
+                                <p>Changes the mode of editing messages in a room. If any option other than "Disabled" is chosen, a user's own messages appear with an Edit ( <FontAwesomeIcon icon={faEdit} size="sm"/> ) icon, which when clicked, allows messages to be edited. Edited messages can be resent by pressing "Enter" or clicking the Send ( <FontAwesomeIcon icon={faPaperPlane} size="sm" /> ) icon.</p>
+                                <p>Note that messages can be edited only after they are identified as a complete utterance by the Google speech-to-text engine, and the icon appears only after a message is considered complete.</p>
+                                <p><b>Create New</b> sends the edited message as an entirely new caption. Users receive a notification indicating that they've received an edited message.</p>
+                                <p><b>Inline</b> changes the message in place. Users receive a notification indicating that a message in the conversation has been edited.</p>
+                                <p><b>Disabled</b> turns off message editing.</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </Table>
+            </>);
+    }
+
     return (
         <>
             <div className="text-center welcome">
@@ -243,8 +306,10 @@ const CreateRoom = (props) => {
                 </span> 
                 {/* <button className="btn btn-success btn-lg" onClick={create}>Generate New Room Token</button> */}
                 <div hidden={!roomId} style={{ marginTop: "1em" }}>
-                    <p className="lead">Use the options below to create shareable tokens with altered room permissions.
+                    <p className="lead">Use the options below to create shareable tokens with altered room permissions.&nbsp;
+                    <FontAwesomeIcon className="chat-fa-icon" title="Options help" icon={faQuestionCircle} onClick={() => setShowOptionsHelp(!showOptionsHelp)} />
                     </p>
+                    <p className="lead">Use the copy button below ( <FontAwesomeIcon icon={faCopy} size="sm" /> ) to copy the link to be shared with participants.</p>
                     {!!queryParams["video"] ? renderVideoOptions() : renderCaptionPhoneOptions()}
                 </div>
             </div>
@@ -258,6 +323,20 @@ const CreateRoom = (props) => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={handleModalClose}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={showOptionsHelp} onHide={handleHelpModalClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Room Options</Modal.Title>
+                </Modal.Header>
+                <Modal.Body style={{maxHeight:"50vh", overflowY:"scroll"}}>
+                    {renderOptionsHelp()}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleHelpModalClose}>
                         Close
                     </Button>
                 </Modal.Footer>

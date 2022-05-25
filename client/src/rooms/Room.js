@@ -339,7 +339,7 @@ const Room = (props) => {
         const peer = new Peer({
             initiator: true,
             trickle: false,
-            config: { iceServers: iceServersConfig },
+            config: { iceServers: iceServersConfig, iceTransportPolicy: "relay" },
             stream,
         });
 
@@ -354,7 +354,7 @@ const Room = (props) => {
         const peer = new Peer({
             initiator: false,
             trickle: false,
-            config: { iceServers: iceServersConfig },
+            config: { iceServers: iceServersConfig, iceTransportPolicy: "relay" },
             stream,
         })
 

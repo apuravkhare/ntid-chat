@@ -208,9 +208,7 @@ io.on('connection', socket => {
                   io.to(socketId).emit('speechData', data);
                 });
               } else {
-                users[socketToRoom[client.id]].forEach(socketId => {
-                  io.to(socketId).emit('speechDataSync', data);
-                });
+                io.to(client.id).emit('speechDataSync', data);
               }
 
               if (data.results[0] && data.results[0].isFinal) {

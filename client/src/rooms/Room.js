@@ -109,7 +109,7 @@ const Room = (props) => {
     const [roomID, roomOptions] = AppUtil.getQueryParams(props);
     const history = useHistory();
     const selectedDevices = history.location.state;
-    const [iceServersConfig, setIceServersConfig] = useState();
+    // const [iceServersConfig, setIceServersConfig] = useState();
     let AudioContext = useRef();
     let context = useRef();
     let processor = useRef();
@@ -161,30 +161,35 @@ const Room = (props) => {
                 userAudio.current.srcObject = stream;
             }
 
-            socketRef.current.emit("join room", { roomID: roomID, isAsync: roomOptions.isAsync });
-            socketRef.current.on("all users", users => {
-                getIceServers();
-                const peers = [];
-                users.forEach(userID => {
-                    const peer = createPeer(userID, socketRef.current.id, stream);
+            getIceServers(iceServersConfig => {
+                // We want to do these operations only after setting the ICE servers
+                socketRef.current.emit("join room", { roomID: roomID, isAsync: roomOptions.isAsync })
+
+                socketRef.current.on("all users", users => {
+                    const peers = [];
+                    users.forEach(userID => {
+                        const peer = createPeer(userID, socketRef.current.id, stream, iceServersConfig);
+                        peersRef.current.push({
+                            peerID: userID,
+                            peer,
+                        })
+                        peers.push(peer);
+                    })
+                    setPeers(peers);
+                })
+    
+                socketRef.current.on("user joined", payload => {
+                    const peer = addPeer(payload.signal, payload.callerID, stream, iceServersConfig);
                     peersRef.current.push({
-                        peerID: userID,
+                        peerID: payload.callerID,
                         peer,
                     })
-                    peers.push(peer);
-                })
-                setPeers(peers);
-            })
-
-            socketRef.current.on("user joined", payload => {
-                const peer = addPeer(payload.signal, payload.callerID, stream);
-                peersRef.current.push({
-                    peerID: payload.callerID,
-                    peer,
-                })
-
-                setPeers(users => [...users, peer]);
+    
+                    setPeers(users => [...users, peer]);
+                });
             });
+            
+            
 
             socketRef.current.on("receiving returned signal", payload => {
                 const item = peersRef.current.find(p => p.peerID === payload.id);
@@ -239,12 +244,12 @@ const Room = (props) => {
         setAsrResultSync(payload);
     }
 
-    function getIceServers() {
+    function getIceServers(emitCallback) {
         fetch("/api/credentials", {
             method: 'GET'
         }).then(response => {
             response.json().then(data => {
-                setIceServersConfig(data.iceServers);
+                emitCallback(data.iceServers);
             }).catch(error => {
                 console.error(error);
                 AppUtil.createNotification("An error occurred while connecting to the relay servers. Please contact administrator.", AppConstants.notificationType.error);
@@ -293,7 +298,10 @@ const Room = (props) => {
         socketRef.current.emit('binaryAudioData', left16);
     }
 
-    function createPeer(userToSignal, callerID, stream) {
+    function createPeer(userToSignal, callerID, stream, iceServersConfig) {
+        console.debug("Creating peer with ICE servers:");
+        console.debug(iceServersConfig);
+
         const peer = new Peer({
             initiator: true,
             trickle: false,
@@ -308,7 +316,7 @@ const Room = (props) => {
         return peer;
     }
 
-    function addPeer(incomingSignal, callerID, stream) {
+    function addPeer(incomingSignal, callerID, stream, iceServersConfig) {
         const peer = new Peer({
             initiator: false,
             trickle: false,

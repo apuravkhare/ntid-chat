@@ -60,7 +60,7 @@ io.on('connection', socket => {
 
         if (users[roomID]) {
             const length = users[roomID].length;
-            if (length === 3) {
+            if (length === 4) {
                 socket.emit("notification", { type: "error", message: "Room full, please try later!" });
                 return;
             }
@@ -283,6 +283,23 @@ app.get("/api/download", function (request, response) {
     console.log(error);
     response.status(500).send(error);
   });
+});
+
+app.get("/api/credentials", function (request, response) {
+  // Download the helper library from https://www.twilio.com/docs/node/install
+  // Find your Account SID and Auth Token at twilio.com/console
+  // and set the environment variables. See http://twil.io/secure
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+
+  const client = require('twilio')(accountSid, authToken);
+
+  client.tokens.create().then(token => {
+    response.json(token);
+    }).catch(error => {
+      console.log(error);
+      response.status(500).send(error);
+    });
 });
 
 // function startRecognitionStream(client, GCSServiceAccount, request) {

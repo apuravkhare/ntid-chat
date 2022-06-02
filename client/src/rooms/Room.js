@@ -91,70 +91,9 @@ const audioConstraints = {
 
 const allowedFontSizes = ["small", "medium", "large", "x-large", "xx-large"];
 
-// Config from: subspace.com
-/*
-  Client ID: cPgqrBTSlR3fiLiZhrzhgliWJ2zNXlOe
-  Client Secret: rkYQ5ojieSJWfkrMClhGw4X8QWDlQs6VfDptRtuffr6dmVrI_zsRZ3-3SoandwHR
- */
-
-/**
- * {"access_token":"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlFVRXdRalE0TUVNd01UUTVNMFV4UWtZNE0wTTJSRUl5UWtOR1JqZENORE14TVRJeFJEaEVPQSJ9.eyJodHRwczovL2FwaS5zdWJzcGFjZS5jb20vbWV0YWRhdGEiOnsicHJvamVjdF9pZCI6InByal8yR2I2OWlnSlJibjV2Q1pYWGZOdThJIn0sImlzcyI6Imh0dHBzOi8vc3Vic3BhY2UuYXV0aDAuY29tLyIsInN1YiI6ImNQZ3FyQlRTbFIzZmlMaVpocnpoZ2xpV0oyek5YbE9lQGNsaWVudHMiLCJhdWQiOiJodHRwczovL2FwaS5zdWJzcGFjZS5jb20vIiwiaWF0IjoxNjUyMjkxMzczLCJleHAiOjE2NTIzNzc3NzMsImF6cCI6ImNQZ3FyQlRTbFIzZmlMaVpocnpoZ2xpV0oyek5YbE9lIiwic2NvcGUiOiJjb25zb2xlOmFjY2VzcyBhY2NlbGVyYXRvcnM6cmVhZCBhY2NlbGVyYXRvcnM6d3JpdGUgZ2xvYmFsdHVybjphY2Nlc3Mgc2lwdGVsZXBvcnQ6cmVhZCBzaXB0ZWxlcG9ydDp3cml0ZSBwcm9qZWN0czpyZWFkIHJ0cHNwZWVkOnJlYWQgcnRwc3BlZWQ6d3JpdGUiLCJndHkiOiJjbGllbnQtY3JlZGVudGlhbHMiLCJwZXJtaXNzaW9ucyI6WyJjb25zb2xlOmFjY2VzcyIsImFjY2VsZXJhdG9yczpyZWFkIiwiYWNjZWxlcmF0b3JzOndyaXRlIiwiZ2xvYmFsdHVybjphY2Nlc3MiLCJzaXB0ZWxlcG9ydDpyZWFkIiwic2lwdGVsZXBvcnQ6d3JpdGUiLCJwcm9qZWN0czpyZWFkIiwicnRwc3BlZWQ6cmVhZCIsInJ0cHNwZWVkOndyaXRlIl19.Z-SeqmN4sW6cKGBR4zKkANT8NYSrfnKEQAToIwHmpAueu3gB9c7z4N1mirQcXgULIC6PFziBWEvxMgpWJs2Gb08Ikk2pZVN3r8-Wo6Keb9y2esLtR1juYtoDU_5eZYILN1XwOSQcAxkNCcBFeSRoPT59-gVvdkTYUD_JxWZek3HW--CP-GYzd7_75f991zrHtp_l7aabfZWN9xNtditwneBDd_VKyCK0Lgy0IQopHkWzpXZsCJX0Pc577-PA9uJ428WL92dhXX9nLQJXpXmrvfo1KBAXtka1J0Lud2NvHJkN_FvCtDpYBPifuiF9nJMYQ3rA8Zn_VE4uE0VSW9luig","scope":"console:access accelerators:read accelerators:write globalturn:access sipteleport:read sipteleport:write projects:read rtpspeed:read rtpspeed:write","expires_in":86400,"token_type":"Bearer"}
- */
-/**
- * {"iceServers":[{"username":"1652378158:prj_2Gb69igJRbn5vCZXXfNu8I","credential":"BL5Sw/0WtcdKeeQpz6+N0nFRu3A=","urls":"turn:globalturn.subspace.com:3478?transport=udp"},{"username":"1652378158:prj_2Gb69igJRbn5vCZXXfNu8I","credential":"BL5Sw/0WtcdKeeQpz6+N0nFRu3A=","urls":"turn:globalturn.subspace.com:3478?transport=tcp"},{"username":"1652378158:prj_2Gb69igJRbn5vCZXXfNu8I","credential":"BL5Sw/0WtcdKeeQpz6+N0nFRu3A=","urls":"turns:globalturn.subspace.com:5349?transport=udp"},{"username":"1652378158:prj_2Gb69igJRbn5vCZXXfNu8I","credential":"BL5Sw/0WtcdKeeQpz6+N0nFRu3A=","urls":"turns:globalturn.subspace.com:5349?transport=tcp"},{"username":"1652378158:prj_2Gb69igJRbn5vCZXXfNu8I","credential":"BL5Sw/0WtcdKeeQpz6+N0nFRu3A=","urls":"turns:globalturn.subspace.com:443?transport=tcp"}],"ttl":86400}
- */
- 
-const iceServersConfig = [
-    // { urls: "stun:openrelay.metered.ca:80" },
-    { urls: "stun:stun.l.google.com:19302" },
-    { "urls": "turn:numb.viagenie.ca", "username": "ak2816@rit.edu", "credential": "jyBQUMNLuSdxR8n" }
-    // { "username": "1652934409:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "4IF0sEFeSHltOVUTxEZo+R+XUEE=", "urls": "turn:globalturn.subspace.com:3478?transport=udp" },
-    // { "username": "1652934409:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "4IF0sEFeSHltOVUTxEZo+R+XUEE=", "urls": "turn:globalturn.subspace.com:3478?transport=tcp" },
-    // { "username": "1652934409:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "4IF0sEFeSHltOVUTxEZo+R+XUEE=", "urls": "turns:globalturn.subspace.com:5349?transport=udp" },
-    // { "username": "1652934409:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "4IF0sEFeSHltOVUTxEZo+R+XUEE=", "urls": "turns:globalturn.subspace.com:5349?transport=tcp" },
-    // { "username": "1652934409:prj_2Gb69igJRbn5vCZXXfNu8I", "credential": "4IF0sEFeSHltOVUTxEZo+R+XUEE=", "urls": "turns:globalturn.subspace.com:443?transport=tcp" },
-    // { "url": "turn:numb.viagenie.ca", "username": "ak2816@rit.edu", "credential": "jyBQUMNLuSdxR8n" }
-];
-
 // const iceServersConfig = [
-//     {
-//         urls: "stun:openrelay.metered.ca:80",
-//     },
-//     {
-//         url: "turn:numb.viagenie.ca",
-//         username: "ak2816@rit.edu",
-//         credential: "jyBQUMNLuSdxR8n"
-//     },
-    // {
-    //     url: 'turn:numb.viagenie.ca',
-    //     username: 'webrtc@live.com',
-    //     credential: 'muazkh',
-    // },
-    // {
-    //     urls: "turns:openrelay.metered.ca:443",
-    //     username: "openrelayproject",
-    //     credential: "openrelayproject",
-    // },
-    // {
-    //     urls: "turns:staticauth.openrelay.metered.ca:443",
-    //     username: "openrelayproject",
-    //     credential: "openrelayproject",
-    // },
-    // {
-    //     urls: "turn:openrelay.metered.ca:80",
-    //     username: "openrelayproject",
-    //     credential: "openrelayproject",
-    // },
-    // {
-    //     urls: "turn:openrelay.metered.ca:443",
-    //     username: "openrelayproject",
-    //     credential: "openrelayproject",
-    // },
-    // {
-    //     urls: "turn:openrelay.metered.ca:443?transport=tcp",
-    //     username: "openrelayproject",
-    //     credential: "openrelayproject",
-    // },
+//     { urls: "stun:stun.l.google.com:19302" },
+//     { "urls": "turn:numb.viagenie.ca", "username": "ak2816@rit.edu", "credential": "jyBQUMNLuSdxR8n" }
 // ];
 
 const Room = (props) => {
@@ -170,6 +109,7 @@ const Room = (props) => {
     const [roomID, roomOptions] = AppUtil.getQueryParams(props);
     const history = useHistory();
     const selectedDevices = history.location.state;
+    const [iceServersConfig, setIceServersConfig] = useState();
     let AudioContext = useRef();
     let context = useRef();
     let processor = useRef();
@@ -223,6 +163,7 @@ const Room = (props) => {
 
             socketRef.current.emit("join room", { roomID: roomID, isAsync: roomOptions.isAsync });
             socketRef.current.on("all users", users => {
+                getIceServers();
                 const peers = [];
                 users.forEach(userID => {
                     const peer = createPeer(userID, socketRef.current.id, stream);
@@ -296,6 +237,22 @@ const Room = (props) => {
         console.debug('Payload received');
         console.debug('Set ASR Result: ' + JSON.stringify(payload));
         setAsrResultSync(payload);
+    }
+
+    function getIceServers() {
+        fetch("/api/credentials", {
+            method: 'GET'
+        }).then(response => {
+            response.json().then(data => {
+                setIceServersConfig(data.iceServers);
+            }).catch(error => {
+                console.error(error);
+                AppUtil.createNotification("An error occurred while connecting to the relay servers. Please contact administrator.", AppConstants.notificationType.error);
+            });
+        }).catch(error => {
+            console.error(error);
+            AppUtil.createNotification("An error occurred while connecting to the relay servers. Please contact administrator.", AppConstants.notificationType.error);
+        });
     }
 
     function updateCaptions(payload) {

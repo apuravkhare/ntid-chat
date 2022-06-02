@@ -6,16 +6,15 @@
   - [Firebase account with a Firestore database](#firebase-account-with-a-firestore-database)
   - [Running the application locally](#running-the-application-locally)
     - [Server](#server)
-    - [To run the server, from the project root, execute:](#to-run-the-server-from-the-project-root-execute)
     - [Client](#client)
   - [Deployment](#deployment)
 - [Developer Notes](#developer-notes)
   - [Front-end design](#front-end-design)
   - [Back-end design](#back-end-design)
-  - [Third-party APIs](#third-party-apis)
+  - [Third-party APIs - Common issues and debugging them](#third-party-apis---common-issues-and-debugging-them)
     - [STUN/TURN servers](#stunturn-servers)
     - [Google Cloud APIs](#google-cloud-apis)
-  - [Development protocols](#Development-protocols)
+- [Development Protocols](#development-protocols)
 
 # Introduction
 Audio/video chat application with real-time captioning. It can be used to simulate either phone or video conversations.
@@ -57,13 +56,17 @@ Add an empty collection named "**transcript-logs**" to this database.
 
 ## Running the application locally
 
+Make sure that the correct versions of Node.js and ReactJS are installed on the development machine.
+
+You may have to install the dependencies manually if the start command doesn't automatically do it.
+
 ### Server
 To install the dependencies, from the project root, execute:
 ```
 npm install
 ```
 
-### To run the server, from the project root, execute:
+To run the server, from the project root, execute:
 ```
 npm start
 ```
@@ -113,9 +116,12 @@ The application heavily relies on Bootstrap's components, classes, and layout pr
 
 
 ## Back-end design
+The back-end of the application is fairly light, and most of the code deals with signaling the participants in the study.
+Most of the code is in the index.js file.
 
+Note: New features, like transcript downloads, are implemented in separate code files, and some refactoring can be performed to make index.js lighter.
 
-## Third-party APIs
+## Third-party APIs - Common issues and debugging them
 The application uses various third-party APIs that may need debugging. These are some important areas:
 
 ### STUN/TURN servers
@@ -126,6 +132,8 @@ STUN/TURN servers help establish a connection between the peers for transmitting
 We used the free servers from the [Open Relay Project](https://www.metered.ca/tools/openrelay/) for a few months, but they started failing to establish a connection around May 2022. As of May 2022, we've switched to using the free servers provided by [Subspace](https://subspace.com/pricing/webrtc-cdn) and [Numb](https://numb.viagenie.ca/).
 
 In case errors observed where audio/video is not transmitted between some or all of the participants, it is worth checking the server status on [Trickle ICE](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/). Add the server config to the form, and click on "Gather Candidates" at the bottom of the screen. A status of "rtcp relay" indicates that the configuration is functional.
+
+**Update (June 2022)**: We have switched to the servers offered by [Twilio](https://www.twilio.com/stun-turn). Credentials are now dynamically created for the server for each call. The development machine needs to have the environment variables "TWILIO_ACCOUNT_SID" and "TWILIO_AUTH_TOKEN" to authenticate the Twilio account, set up using the procedure described [here](https://www.twilio.com/blog/2017/01/how-to-set-environment-variables.html). The variables are set on Heroku as well.
 
 ### Google Cloud APIs
 Check this service if audio/video is transmitted, but captions are not generated, or there are server errors from the Google Cloud service.

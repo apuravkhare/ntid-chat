@@ -15,6 +15,9 @@ import { toast } from 'react-toastify';
 import AppConstants from "../AppConstants";
 import AppUtil from "../util/AppUtil";
 
+/**
+ * Placeholder component for the HTML video tag, with additional styles.
+ */
 const StyledVideo = styled.video`
     height: 90%;
     margin: 0.5em;
@@ -30,7 +33,11 @@ const Caption = styled.p`
     border-radius: 3px;
 `;
 
-
+/**
+ * Component for a single video element.
+ * @param params An object containing the peer from which to show the video, and the callback for notifications.
+ * @returns An instance of the component for one video feed.
+ */
 const Video = ({peer, onActionSelect}) => {
     const ref = useRef();
 
@@ -62,6 +69,11 @@ const Video = ({peer, onActionSelect}) => {
     );
 }
 
+/**
+ * Component for a single audio element.
+ * @param props An object containing the peer from which to show the audio.
+ * @returns An instance of the component for one audio feed.
+ */
 const Audio = (props) => {
     const ref = useRef();
 
@@ -96,6 +108,11 @@ const allowedFontSizes = ["small", "medium", "large", "x-large", "xx-large"];
 //     { "urls": "turn:numb.viagenie.ca", "username": "ak2816@rit.edu", "credential": "jyBQUMNLuSdxR8n" }
 // ];
 
+/**
+ * Component for the room page for a user. This screen holds all major components for the communication and caption components.
+ * @param {*} props Props for the component. Currently used for passing parameters from the previous page.
+ * @returns An instance of the component for one room.
+ */
 const Room = (props) => {
     const [fontSizeIndex, setFontSizeIndex] = useState(2);
     const [peers, setPeers] = useState([]);
@@ -116,7 +133,12 @@ const Room = (props) => {
     let audioStream = useRef();
     let input = useRef();
 
+    /**
+     * Runs on component load, and contains all the major operations for initiating the conversation and establishing listeners used throughout.
+     */
     useEffect(() => {
+
+        // Check for browser support.
         const hasGetUserMedia = !!(navigator.getUserMedia || navigator.webkitGetUserMedia ||
             navigator.mozGetUserMedia || navigator.msGetUserMedia || (navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
 
@@ -140,12 +162,15 @@ const Room = (props) => {
         const selectedAudioConstraints = !!selectedDevices.selectedAudioDevice ? { ...audioConstraints, deviceId: selectedDevices.selectedAudioDevice } : 
         audioConstraints;
 
+        // Obtain permissions for the microphone and camera. Use the devices selected on the configure page, if any. Use the default ones otherwise.
         navigator.mediaDevices.getUserMedia({ video: roomOptions.video ? selectedVideoConstraints : false, audio: selectedAudioConstraints }).then(stream => {
             audioStream.current = new MediaStream(stream.getAudioTracks());
             input.current = context.current.createMediaStreamSource(audioStream.current);
             input.current.connect(processor.current);
             processor.current.connect(context.current.destination);
 
+            // Called when the browser detects audio.
+            // TODO: Chrome issues a warning for this function as it will be deprecated soon. We need to find a library/alternate mechanism for doing this.
             processor.current.onaudioprocess = function (e) {
                 if (((!roomOptions.isAsync && !isMuted.current) || roomOptions.isAsync) && roomOptions.generateCaptions) {
                     microphoneProcess(e);
@@ -161,10 +186,13 @@ const Room = (props) => {
                 userAudio.current.srcObject = stream;
             }
 
+            // 06/01/2022: Switched to Twilio servers. They require us to authenticate credentials every time, so we can't hardcode any servers.
+            // We want to do these operations only after setting the ICE servers
             getIceServers(iceServersConfig => {
-                // We want to do these operations only after setting the ICE servers
+                // Step 1: Tell the server that a participant has joined.
                 socketRef.current.emit("join room", { roomID: roomID, isAsync: roomOptions.isAsync })
 
+                // Step 2: Obtain information of other users in that room, and connect the audio/video stream to them both ways.
                 socketRef.current.on("all users", users => {
                     const peers = [];
                     users.forEach(userID => {
@@ -178,6 +206,7 @@ const Room = (props) => {
                     setPeers(peers);
                 })
     
+                // Step 3: Create a listener for when a new user joins this room - we essentially need to connect the audio/video stream to them.
                 socketRef.current.on("user joined", payload => {
                     const peer = addPeer(payload.signal, payload.callerID, stream, iceServersConfig);
                     peersRef.current.push({
@@ -189,13 +218,13 @@ const Room = (props) => {
                 });
             });
             
-            
-
+            // Step 4. On confirmation that a new user has been connected, transmit the audio/video.
             socketRef.current.on("receiving returned signal", payload => {
                 const item = peersRef.current.find(p => p.peerID === payload.id);
                 item.peer.signal(payload.signal);
             });
 
+            // When captions are received from the server, display them as per the user's config.
             socketRef.current.on("speechData", payload => {
                 if (payload) {
                     updateCaptions(payload);
@@ -203,12 +232,14 @@ const Room = (props) => {
                 }
             })
 
+            // If the application is in synchronous mode, display the captions in the text box.
             socketRef.current.on("speechDataSync", payload => {
                 if (payload) {
                     updateCaptionsSync(payload);
                 }
             })
 
+            // When the server issues a notification, show the corresponding toast notification.
             socketRef.current.on("notification", payload => {
                 if (payload) {
                     AppUtil.createNotification(payload.message, payload.type)
@@ -217,11 +248,14 @@ const Room = (props) => {
                 }
             });
 
+            // User has clicked the microphone button, and the ASR engine has started.
             socketRef.current.on("syncSpeechStarted", payload => {
                 isMuted.current = false;
                 setAsrResultSync("");
             });
 
+            // The ASR engine has marked the sentence as complete, and has stopped listening.
+            // TODO: We may need to change/restart here if extended listening is required.
             socketRef.current.on("syncSpeechEnded", payload => {
                 isMuted.current = true;
                 AppUtil.createNotification("The sentence is marked complete by the ASR engine. Please click the mic icon to type another message.", AppConstants.notificationType.info);
@@ -238,12 +272,20 @@ const Room = (props) => {
         setFontSizeIndex(current => current === allowedFontSizes.length - 1 ? 0 : current + 1)
     }
 
+    /**
+     * Updates the captions in the text box for synchronous mode.
+     * @param {*} payload The captions to display
+     */
     function updateCaptionsSync(payload) {
         console.debug('Payload received');
         console.debug('Set ASR Result: ' + JSON.stringify(payload));
         setAsrResultSync(payload);
     }
 
+    /**
+     * Gets the ICE server config after authentication from the server.
+     * @param {*} emitCallback The function to call when the server config is successfully received.
+     */
     function getIceServers(emitCallback) {
         fetch("/api/credentials", {
             method: 'GET'
@@ -260,6 +302,10 @@ const Room = (props) => {
         });
     }
 
+    /**
+     * Updates captions in asynchronous (continuous) mode.
+     * @param {*} payload The captions to display.
+     */
     function updateCaptions(payload) {
         console.debug('Payload received');
         console.debug('Set ASR Result: ' + JSON.stringify(payload));
@@ -279,6 +325,11 @@ const Room = (props) => {
         // }
     }
 
+    /**
+     * Helper function for converting audio buffer format for processing.
+     * @param {*} buffer Float 32 buffer.
+     * @returns Int 16 version of the buffer.
+     */
     function convertFloat32ToInt16(buffer) {
         let l = buffer.length;
         let buf = new Int16Array(l / 3);
@@ -291,6 +342,10 @@ const Room = (props) => {
         return buf.buffer
     }
 
+    /**
+     * Sends the formatted (single channel, 16 bit) audio data to the server.
+     * @param {*} e The audio data.
+     */
     function microphoneProcess(e) {
         // console.log('Room - microphone process');
         var left = e.inputBuffer.getChannelData(0);
@@ -298,6 +353,14 @@ const Room = (props) => {
         socketRef.current.emit('binaryAudioData', left16);
     }
 
+    /**
+     * Creates a peer for the current user to connect to another user in the room.
+     * @param {String} userToSignal The socket id of a peer in the room.
+     * @param {String} callerID The socket id of the current user.
+     * @param {*} stream Current user's audio/video.
+     * @param {*} iceServersConfig ICE servers to use for the connection.
+     * @returns The peer object for the other user.
+     */
     function createPeer(userToSignal, callerID, stream, iceServersConfig) {
         console.debug("Creating peer with ICE servers:");
         console.debug(iceServersConfig);
@@ -316,6 +379,14 @@ const Room = (props) => {
         return peer;
     }
 
+    /**
+     * Creates a peer when a new user joins this room.
+     * @param {String} incomingSignal Audio/video from the new user.
+     * @param {String} callerID The socket id of the new user.
+     * @param {*} stream Current user's audio/video.
+     * @param {*} iceServersConfig ICE servers to use for the connection.
+     * @returns The peer object for the new user.
+     */
     function addPeer(incomingSignal, callerID, stream, iceServersConfig) {
         const peer = new Peer({
             initiator: false,
@@ -333,10 +404,17 @@ const Room = (props) => {
         return peer;
     }
 
+    /**
+     * Called when the microphone icon is clicked.
+     */
     function onSyncSpeech() {
         socketRef.current.emit("syncSpeech");
     }
 
+    /**
+     * Renders the bottom bar with options as per user's config.
+     * @returns HTML for the bottom bar.
+     */
     function renderOptions() {
         return (
             <Navbar bg="light" fixed="bottom">
@@ -358,6 +436,11 @@ const Room = (props) => {
             </Navbar>);
     }
 
+    /**
+     * Mechanism to send notifications to an individual user.
+     * @param {*} eventKey The type of notification to send.
+     * @param {*} peerIndex The index of the user to notify.
+     */
     function notifyUser(eventKey, peerIndex) {
         const peerID = peersRef.current[peerIndex].peerID;
         console.log("notify user: " + eventKey + " - " + peerID );
@@ -376,6 +459,10 @@ const Room = (props) => {
         
     }
 
+    /**
+     * Renders the video section of the room.
+     * @returns HTML for the user and peers' video.
+     */
     function renderVideo() {
         return (
             <div className="h-100" style={{display:!!roomOptions.video ? "inherit":"none"}}>
@@ -393,6 +480,10 @@ const Room = (props) => {
         );
     }
 
+    /**
+     * Renders the audio section of the room.
+     * @returns HTML for the user and peers' audio.
+     */
     function renderAudio() {
         return (
             <Col>
@@ -411,6 +502,10 @@ const Room = (props) => {
         )
     }
 
+    /**
+     * In progress: Renders the admin functions to intercept with a video on demand.
+     * @returns HTML for the admin operations.
+     */
     function renderAdmin() {
         return (
             <Col>
@@ -425,11 +520,20 @@ const Room = (props) => {
         )
     }
 
+    /**
+     * Mechanism to send a text message as a caption to users in the current room.
+     * @param {String} message The message to send.
+     */
     function sendTypedMessage(message) {
         socketRef.current.emit('textMessage', message);
         isMuted.current = true;
     }
 
+    /**
+     * Mechanism to send a potentially modified message as a caption to users in the current room.
+     * @param {*} message The message to send.
+     * @param {*} parentMessageId ID of the message that was modified to create the current message.
+     */
     function sendEditedMessage(message, parentMessageId) {
         socketRef.current.emit('editMessage', { message: message, parentMessageId: parentMessageId });
     }

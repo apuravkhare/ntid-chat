@@ -12,6 +12,11 @@ import Moment from "react-moment";
 import { ExportToCsv } from 'export-to-csv';
 import moment from 'moment';
 
+/**
+ * Component for the main administrative page of the application, used to generate and copy shareable links.
+ * @param {*} props Props for the React component.
+ * @returns HTML for the administrative page.
+ */
 const CreateRoom = (props) => {
     const [roomId, setRoomId] = useState("");
     const routerPath = "room_/";
@@ -22,14 +27,33 @@ const CreateRoom = (props) => {
     const [showOptionsHelp, setShowOptionsHelp] = useState(false);
     const [transcripts, setTranscripts] = useState([]);
 
+    /**
+     * Creates a query params object, using defaults for the parameters if no value is specified.
+     * @param {Boolean} video Toggles whether video is displayed to the user, and if the user's video is transmitted.
+     * @param {Boolean} captions Toggles whether the user can see captions.
+     * @param {Boolean} genCaptions Toggles whether captions are generated for the user.
+     * @param {Boolean} idSpeaker Toggles whether the speaker names are shown in the captions to the user.
+     * @param {String} edit Sets the type of message editing for the user.
+     * @param {Boolean} admin Toggles whether the user is an admin.
+     * @param {Boolean} async Toggles the mode of caption generation.
+     * @returns The query params object.
+     */
     function genQueryParams(video = false, captions = false, genCaptions = false, idSpeaker = false, edit = "none", admin = false, async = true) {
         return { video: video, captions: captions, genCaptions: genCaptions, idSpeaker: idSpeaker, edit: edit, admin: admin, async: async }
     }
 
+    /**
+     * Generates a full URI using the query params and the current web address.
+     * @param {*} params The query params to add to the URI.
+     * @returns Fully qualified web URI.
+     */
     function getFullUri(params) {
         return window.location.href + routerPath + createFullQueryString(params);
     }
 
+    /**
+     * Sets the hover text for the "Copy" icon.
+     */
     function showCopiedOverlay() {
         setCopyBtnToolTipText("Copied!");
         setTimeout(() => {
@@ -37,6 +61,10 @@ const CreateRoom = (props) => {
         }, 2000)
     }
 
+    /**
+     * Generates a new room id based on the type of room selected.
+     * @param {*} eventKey The type of the room.
+     */
     function createNewRoomId(eventKey) {
         let newRoomId = uuid();
         setRoomId(newRoomId);
@@ -48,36 +76,64 @@ const CreateRoom = (props) => {
         }
     }
 
+    /**
+     * Toggles the captions option.
+     */
     function toggleCaptions() {
         setQueryParams({ ...queryParams, captions: !queryParams.captions });
     }
 
+    /**
+     * Toggles the generate captions option.
+     */
     function toggleGenCaptions() {
         setQueryParams({ ...queryParams, genCaptions: !queryParams.genCaptions });
     }
 
+    /**
+     * Toggles the speaker id option.
+     */
     function toggleIdentifySpeaker() {
         setQueryParams({ ...queryParams, idSpeaker: !queryParams.idSpeaker });
     }
 
+    /**
+     * Toggles the captions mode option.
+     */
     function toggleAsyncMode() {
         setQueryParams({ ...queryParams, async: !queryParams.async });
     }
 
+    /**
+     * Sets the type of message editing.
+     */
     function changeMessageEditType(type) {
         setQueryParams({ ...queryParams, edit: type });
     }
 
+    /**
+     * Generates the full query params using the room id and room options.
+     */
     function createFullQueryString(params) {
         return roomId + "?" + stringify(params);
     }
 
+    /**
+     * Displays the tooltip for the "Copy" button.
+     * @param {*} props Props to the tooltip component
+     * @returns Callback to be used for rendering the tooltip.
+     */
     const renderTooltip = (props) => (
         <Tooltip id="button-tooltip" {...props}>
             {copyBtnToolTipText}
         </Tooltip>
     );
 
+    /**
+     * Displays the room id + query params, and the copy button.
+     * @param {*} params The query params to render.
+     * @returns HTML for the text and button.
+     */
     function renderUriBox(params) {
         return (<>
             <span style={{ border: "1px solid gray", borderRadius: 4, padding: "0.5em", userSelect: "none", display: "inline-block", backgroundColor: "white" }}>{createFullQueryString(params)}</span>
@@ -96,6 +152,9 @@ const CreateRoom = (props) => {
         </>);
     }
 
+    /**
+     * Downloads transcript metadata from the server.
+     */
     function downloadTranscripts() {
         fetch("/api/transcript", {
             method: 'GET'
@@ -114,14 +173,24 @@ const CreateRoom = (props) => {
         });
     }
 
+    /**
+     * Closes the Downloads modal.
+     */
     function handleModalClose() {
         setShowTranscripts(false);
     }
 
+    /**
+     * Closes the Help modal.
+     */
     function handleHelpModalClose() {
         setShowOptionsHelp(false);
     }
 
+    /**
+     * Gets the HTML for the pre-configured options for audio-only mode.
+     * @returns HTML for the audio-only mode options.
+     */
     function renderCaptionPhoneOptions() {
         return (
             <>
@@ -134,6 +203,10 @@ const CreateRoom = (props) => {
             </>);
     }
 
+    /**
+     * Gets the HTML for the video mode, and options to change the room options.
+     * @returns HTML for the video mode.
+     */
     function renderVideoOptions() {
         return (
             <>
@@ -168,6 +241,11 @@ const CreateRoom = (props) => {
         );
     }
 
+    /**
+     * Downloads the transcript for the id, uses the timestamp to generate the filename.
+     * @param {*} id The id of the transcript to download.
+     * @param {*} timestamp The timestamp to use for the filename.
+     */
     function downloadTranscript(id, timestamp) {
         fetch("/api/download?" + new URLSearchParams({ id: id }), {
             method: 'GET'
@@ -211,6 +289,10 @@ const CreateRoom = (props) => {
         })
     }
 
+    /**
+     * Gets the HTML for the transcripts metadata.
+     * @returns HTML for displaying the transcripts list.
+     */
     function renderTranscriptsTable() {
         return (
             <Table bordered size="sm">
@@ -233,6 +315,10 @@ const CreateRoom = (props) => {
             </Table>);
     }
 
+    /**
+     * Gets the HTML for the options in the video mode.
+     * @returns HTML for the help modal.
+     */
     function renderOptionsHelp() {
         return (
             <>

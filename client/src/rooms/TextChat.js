@@ -4,12 +4,19 @@ import { faAlignCenter, faArrowUp, faMicrophone, faPaperPlane } from '@fortaweso
 import styled from "styled-components";
 import { propTypes } from "react-bootstrap/esm/Image";
 
-
+/**
+ * Component for the chat text box.
+ * @param {*} params Params object containing the callbacks and settings for this component.
+ * @returns HTML for the text box.
+ */
 const TextChat = ({onSend, fontSize, enableSpeech, onSpeech, externalInput, isListening}) => {
 
   let [message, setMessage] = useState("");
   let inputRef = createRef();
 
+  /**
+   * Called in synchronous mode, when the text is entered into the input from the ASR transcriptions.
+   */
   useEffect(() => {
     if (!!externalInput) {
       const message = externalInput.results[0].alternatives.map(alt => alt.transcript).join(" ");
@@ -18,6 +25,9 @@ const TextChat = ({onSend, fontSize, enableSpeech, onSpeech, externalInput, isLi
     }
   }, [externalInput]);
 
+  /**
+   * Calls the send message callback, and resets the text in the box.
+   */
   function handleSendClick() {
     if (onSend) {
       onSend(message);
@@ -27,16 +37,27 @@ const TextChat = ({onSend, fontSize, enableSpeech, onSpeech, externalInput, isLi
     inputRef.current.value = "";
   }
 
+  /**
+   * Sets the message value on typing.
+   * @param {*} e The event from the text box.
+   */
   function onTyping(e) {
     setMessage(e.target.value);
   }
 
+  /**
+   * Text box keyup event callback.
+   * @param {*} e The event from the text box.
+   */
   function onKeyUp(e) {
     if (e.key === 'Enter') {
       handleSendClick();
     }
   }
 
+  /**
+   * Callback for the microphone icon click.
+   */
   function handleSpeechClick() {
     onSpeech();
   }

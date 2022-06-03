@@ -54,6 +54,9 @@ let counter = 0; // for testing when ASR is disabled
 io.on('connection', socket => {
     // let recognizeStream = null;
 
+    /**
+     * Step 1: A user wants to join a room.
+     */
     socket.on("join room", params => {
       const roomID = params["roomID"];
       const isAsync = params["isAsync"];
@@ -84,14 +87,23 @@ io.on('connection', socket => {
         dbRepository.addNewLog(roomID, users[roomID]);
     });
 
+    /**
+     * Notify a user that another user has joined.
+     */
     socket.on("sending signal", payload => {
         io.to(payload.userToSignal).emit('user joined', { signal: payload.signal, callerID: payload.callerID });
     });
 
+    /**
+     * Notifies the user to begin transmitting audio/video.
+     */
     socket.on("returning signal", payload => {
         io.to(payload.callerID).emit('receiving returned signal', { signal: payload.signal, id: socket.id });
     });
 
+    /**
+     * Removes a user from the room.
+     */
     socket.on('disconnect', () => {
       console.log(`Disconnecting ${socket.id} from the room`);
       const roomID = socketToRoom[socket.id];
@@ -104,10 +116,16 @@ io.on('connection', socket => {
       stopRecognitionStream(socket);
     });
     
+    /**
+     * Mechanism to send notifications to a user.
+     */
     socket.on('notifyPeer', payload => {
       io.to(payload.peerId).emit("notification", { type: payload.type, message: payload.message })
     })
     
+    /**
+     * Event handler for when audio is received from the client.
+     */
     socket.on('binaryAudioData', function(data) {
       // console.log('Room - received audio');
       // fs.writeFileSync('./transcripts/' + socketToRoom[socket.id] + '.txt', createMessage('Audio', 'Audio received'), { flag: "a+",  encoding: "utf8" });
@@ -132,6 +150,9 @@ io.on('connection', socket => {
       // }
     })
 
+    /**
+     * Event handler for when a text message is received from the user.
+     */
     socket.on('textMessage', function(data) {
       const messageId = generateMessageId();
       users[socketToRoom[socket.id]].forEach(socketId => {
@@ -144,6 +165,9 @@ io.on('connection', socket => {
       });
     })
 
+    /**
+     * Event handler for when an edited text message is received from the user.
+     */
     socket.on('editMessage', function(data) {
       const message = data.message;
       const parentMessageId = data.parentMessageId;
@@ -169,6 +193,9 @@ io.on('connection', socket => {
       });
     })
 
+    /**
+     * Event handler for starting synchronous ASR.
+     */
     socket.on('syncSpeech', function () {
       if (!socketToRecognitionStream[socket.id]) {
         startRecognitionStream(socket, false);
@@ -177,6 +204,11 @@ io.on('connection', socket => {
       io.to(socket.id).emit('syncSpeechStarted');
     })
 
+    /**
+     * Hook to the Google ASR engine. Takes the binary audio data, and transmits the captions depending on the mode.
+     * @param {*} client The client for which to create the recognition stream.
+     * @param {*} isAsync Determines the mode of transmission.
+     */
     function startRecognitionStream(client, isAsync) {
       var recognizeStream = speechClient.streamingRecognize(request)
           .on('error', (err) => {
@@ -234,38 +266,50 @@ io.on('connection', socket => {
           socketToRecognitionStream[client.id] = recognizeStream;
       }
 
-    function stopRecognitionStream(socket) {
-      if (socketToRecognitionStream[socket.id]) {
-        socketToRecognitionStream[socket.id].end();
-      }
-      
-      socketToRecognitionStream[socket.id] = null;
-      delete socketToRecognitionStream[socket.id];
+  /**
+   * Stops the hook to the Google ASR engine.
+   * @param {*} socket The client for which to stop the ASR engine.
+   */
+  function stopRecognitionStream(socket) {
+    if (socketToRecognitionStream[socket.id]) {
+      socketToRecognitionStream[socket.id].end();
     }
 
-    function receiveData(data, socket) {
-        if (socketToRecognitionStream[socket.id]) {
-          socketToRecognitionStream[socket.id].write(data);
-        } else {
-          console.warn("Recognition stream is undefined. Stopping the stream for " + socket.id);
-          stopRecognitionStream(socket);
-        }
-    }
+    socketToRecognitionStream[socket.id] = null;
+    delete socketToRecognitionStream[socket.id];
+  }
 
-    function createMessage(type, message) {
-        return getFormattedDate() + '\t' + type + '\t' + message + '\n';
+  /**
+   * Helper function to hook the Google ASR engine to the speech data.
+   * @param {*} data The binary audio data.
+   * @param {*} socket The client the data is from.
+   */
+  function receiveData(data, socket) {
+    if (socketToRecognitionStream[socket.id]) {
+      socketToRecognitionStream[socket.id].write(data);
+    } else {
+      console.warn("Recognition stream is undefined. Stopping the stream for " + socket.id);
+      stopRecognitionStream(socket);
     }
+  }
 
-    function getFormattedDate() {
-        return new Date().toISOString();
-    }
+  function createMessage(type, message) {
+    return getFormattedDate() + '\t' + type + '\t' + message + '\n';
+  }
 
-    function generateMessageId() {
-      return uuidv4();
-    }
+  function getFormattedDate() {
+    return new Date().toISOString();
+  }
+
+  function generateMessageId() {
+    return uuidv4();
+  }
 
 });
 
+/**
+ * REST API for getting the list of transcript metadata.
+ */
 app.get("/api/transcript", function (request, response) {
   dbRepository.getLogs().then(data => {
     response.json(data);
@@ -275,6 +319,9 @@ app.get("/api/transcript", function (request, response) {
   });
 });
 
+/**
+ * REST API for downloading all transcripts for an id.
+ */
 app.get("/api/download", function (request, response) {
   const id = request.query.id;
   const doc = dbRepository.getLog(id).then(data => {
@@ -285,6 +332,9 @@ app.get("/api/download", function (request, response) {
   });
 });
 
+/**
+ * REST API for getting ICE servers from the TWILIO account.
+ */
 app.get("/api/credentials", function (request, response) {
   // Download the helper library from https://www.twilio.com/docs/node/install
   // Find your Account SID and Auth Token at twilio.com/console

@@ -5,6 +5,11 @@ import AppUtil from "../util/AppUtil";
 import AppConstants from "../AppConstants";
 import AudioVisualizer from "../util/AudioVisualizer";
 
+/**
+ * Component for the landing page for a participant to converse in.
+ * @param {*} props The component props.
+ * @returns HTML for the landing page.
+ */
 const RoomLandingPage = (props) => {
 
   const [videoDevices, setVideoDevices] = useState();
@@ -18,6 +23,10 @@ const RoomLandingPage = (props) => {
   const userAudioStream = useRef();
 
   const history = useHistory();
+
+  /**
+   * Changes the current location to the room page.
+   */
   function beginChat() {
     history.push({
       pathname: `/room/${props.match.params.roomID}`,
@@ -34,11 +43,19 @@ const RoomLandingPage = (props) => {
   //   }
   // }, [])
 
+  /**
+   * Helper function to display a default error message on this page.
+   * @param {*} error The error message to log.
+   */
   function showErrorMessage(error) {
     console.error(error);
     AppUtil.createNotification("An error occurred while attempting to access your microphone/camera. Please rejoin this room or contact administrator.", AppConstants.notificationType.error);
   }
 
+  /**
+   * Callback to use after permissions to the audio/video devices have been obtained.
+   * @param {*} devices The devices that the permissions are obtained for.
+   */
   function gotDevices(devices) {
     const filteredVideoDevices = devices.filter(device => device.kind === 'videoinput');
     setVideoDevices(filteredVideoDevices);
@@ -47,6 +64,9 @@ const RoomLandingPage = (props) => {
     setAudioInputDevices(filteredAudioDevices);
   }
 
+  /**
+   * Shows the configuration screen.
+   */
   function configureMediaDevices() {
     navigator.mediaDevices.enumerateDevices().then(devices => {
       gotDevices(devices);
@@ -55,6 +75,10 @@ const RoomLandingPage = (props) => {
     }).catch(showErrorMessage);
   }
 
+  /**
+   * Gets the list of available video devices.
+   * @returns The available video devices, as a list of HTML elements for a HTML drop down.
+   */
   function getVideoDeviceOptions() {
     if (videoDevices) {
       return videoDevices.map((device, index) => <option key={index} value={device.deviceId}> {!!device.label ? device.label : "Camera " + (index + 1)} </option>);
@@ -63,6 +87,10 @@ const RoomLandingPage = (props) => {
     }
   }
 
+  /**
+   * Gets the list of available audio devices.
+   * @returns The available audio devices, as a list of HTML elements for a HTML drop down.
+   */
   function getAudioDeviceOptions() {
     if (audioInputDevices) {
       return audioInputDevices.map((device, index) => <option key={index} value={device.deviceId}> {!!device.label ? device.label : "Microphone " + (index + 1)} </option>);
@@ -71,6 +99,11 @@ const RoomLandingPage = (props) => {
     }
   }
 
+  /**
+   * Changes the audio/video device in use.
+   * @param {*} audioDeviceId The ID of the selected audio device.
+   * @param {*} videoDeviceId The ID of the selected video device.
+   */
   function changeInputs(audioDeviceId, videoDeviceId) {
     if (window.stream) {
       window.stream.getTracks().forEach(track => { track.stop(); });
@@ -106,6 +139,10 @@ const RoomLandingPage = (props) => {
     }
   }
 
+  /**
+   * Generates HTML for the configuration screen.
+   * @returns The HTML for the configuration screen.
+   */
   function renderConfigScreen() {
     return (
       <Card className="w-75 m-auto">
@@ -155,6 +192,10 @@ const RoomLandingPage = (props) => {
     )
   }
 
+  /**
+   * Generates HTML for the landing page.
+   * @returns The HTML for the landing page.
+   */
   function renderHomeScreen() {
     return (
       <div className="text-center welcome">

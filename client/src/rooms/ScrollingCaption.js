@@ -3,6 +3,11 @@ import AppConstants from "../AppConstants";
 import SpeechBubble from "./SpeechBubble";
 import ScrollToBottom from 'react-scroll-to-bottom';
 
+/**
+ * Component for holding the speech bubbles. Handles the auto-scroll.
+ * @param {*} params Params object containing the callbacks and settings for this component.
+ * @returns HTML for the speech bubble container.
+ */
 const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers, onSend, messageEditType}) => {
   const senderUserId = currentUserId;
   // const [captions, setCaptions] = useState([{"userId": 1, "message": "This is a test message This is a test message"}, {"userId": 2, "message": "This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2 This is a test message 2"}]); // [{ string: string }]
@@ -10,6 +15,9 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers, onS
   const [inProgress, setInProgress] = useState({}); // { string: string }
   let messagesContainer = createRef();
 
+  /**
+   * Called when the captions are updated. Decides whether the caption should be updated in an existing speech bubble, or a new bubble should be created.
+   */
   useEffect(() => {
     if (displayCaptions && displayCaptions.results && displayCaptions.results[0]) {
       const message = displayCaptions.results[0].alternatives.map(alt => alt.transcript).join(" ");
@@ -49,6 +57,10 @@ const ScrollingCaption = ({currentUserId, displayCaptions, identifySpeakers, onS
     messagesContainer.current.scrollTo(0, scroll);
   }
 
+  /**
+   * Renders the div to hold the speech bubbles.
+   * @returns HTML for the conversation container.
+   */
   function renderCaptionContainer() {
     const containers = [];
     for (let index = 0; index < captions.length; index++) {

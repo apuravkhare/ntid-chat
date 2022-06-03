@@ -4,12 +4,20 @@ import { faEdit, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import AppConstants from "../AppConstants";
 import StringDistanceCalculator from "../util/StringDistanceCalculator";
 
+/**
+ * Component for a single speech bubble. Handles displaying the bubbles to the left or right of the screen if configured.
+ * @param {*} params An object containing options and callbacks for this component. 
+ * @returns HTML for a speech bubble.
+ */
 const SpeechBubble = ({identifySpeakers, caption, senderUserId, index, handleSendClick, messageId, messageEditType}) => {
 
   const [isEdit, setIsEdit] = useState(false);
   const [message, setMessage] = useState("");
   const textAreaRef = createRef();
 
+  /**
+   * Hook called when the edit button on a speech bubble is clicked.
+   */
   useEffect(() => {
     if (isEdit && textAreaRef.current) {
       textAreaRef.current.focus();
@@ -17,21 +25,39 @@ const SpeechBubble = ({identifySpeakers, caption, senderUserId, index, handleSen
     }
   }, [isEdit]);
 
+  /**
+   * Callback for sending a message from inside the speech bubble.
+   */
   function onSendClick() {
     setIsEdit(false);
     handleSendClick(message, messageId);
   }
 
+  /**
+   * Callback to be used when text is edited in the speech bubble.
+   * @param {*} e The event from the text box in the speech bubble.
+   */
   function onTyping(e) {
     setMessage(e.target.value);
   }
 
+  /**
+   * Callback to be used when a key is pressed in the speech bubble.
+   * @param {*} e The event from the text box in the speech bubble.
+   */
   function onKeyUp(e) {
     if (e.key === 'Enter') {
       onSendClick();
     }
   }
 
+  /**
+   * Renders text in the speech bubble with the edited words stylized (strikethrough and different color).
+   * @param {*} diff The text diff metadata.
+   * @param {*} original The original text.
+   * @param {*} edited The edited text.
+   * @returns HTML for the stylized text.
+   */
   function renderDiff(diff, original, edited) {
     switch (diff.type) {
       case StringDistanceCalculator.editTypes.substitution:
@@ -43,6 +69,10 @@ const SpeechBubble = ({identifySpeakers, caption, senderUserId, index, handleSen
     }
   }
 
+  /**
+   * Renders text in the speech bubble split on each word, allowing styles to be applied to individual words if needed.
+   * @returns HTML for the caption text.
+   */
   function renderSplitText() {
     const text = caption["message"];
 

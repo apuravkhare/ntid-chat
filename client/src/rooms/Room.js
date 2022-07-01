@@ -14,8 +14,8 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 import { toast } from 'react-toastify';
 import AppConstants from "../AppConstants";
 import AppUtil from "../util/AppUtil";
-
-/**
+import myImage from "../man_talking.jpeg"
+/** 
  * Placeholder component for the HTML video tag, with additional styles.
  */
 const StyledVideo = styled.video`
@@ -557,6 +557,7 @@ const Room = (props) => {
             <Row hidden={roomOptions.showCaptions === true} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%", textAlign: "center"}}>
                 <Col className="h-100">
                     <div className="text-dark text-opacity-50" style={{padding: "5em"}}>
+                        <div> <img src={myImage} style = {{ height: 200 ,width: 240}} alt="Man Talking" /></div>
                         <FontAwesomeIcon icon={faClosedCaptioning} size="3x" />
                         <h5>You do not have access to view captions in this room.</h5>
                     </div>

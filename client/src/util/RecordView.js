@@ -1,9 +1,12 @@
 import { useReactMediaRecorder } from "react-media-recorder";
-import React, { useEffect, useRef, useState, } from "react";
+import React, { useState } from "react";
 import { saveAs } from "file-saver";
 import styled from "styled-components";
-import { Button, ButtonGroup, Dropdown, Form, FormCheck, Modal, OverlayTrigger, Table, ToggleButton, Tooltip } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
+const buttonStyle = {
+  margin: "2px"
+};
 
 const RecordView = () => {
   const [blob,setBlob] = useState([])
@@ -17,10 +20,10 @@ const RecordView = () => {
   }
 
   return (
-    <div style={{margin:"10px"}}>
-      <Button onClick={startRecording}>Start Recording</Button>
-      <Button onClick={stopRecording}>Stop Recording</Button>
-      <Button onClick={()=>download(mediaBlobUrl)}>download</Button>
+    <div style={{margin:"10px", display: "flex" }}>
+      <Button style={buttonStyle} onClick={startRecording}>Start Recording</Button>
+      <Button style={buttonStyle}  onClick={stopRecording}>Stop Recording</Button>
+      <Button style={buttonStyle} onClick={()=>download(mediaBlobUrl)}>download</Button>
     </div>
   );
 };

@@ -98,7 +98,7 @@ const SpeechBubble = ({identifySpeakers, caption, senderUserId, index, handleSen
 
   return(
     <div className="w-100" style={{overflow:"auto" ,float: identifySpeakers && caption["userId"] === senderUserId ? "right" : "left"}}>
-      <div className={identifySpeakers && caption["userId"] === senderUserId ? "scrolling-caption-container-sender position-relative" : "scrolling-caption-container"}>
+      <div style ={{display: "block"}}className={identifySpeakers && caption["userId"] === senderUserId ? "scrolling-caption-container-sender position-relative" : "scrolling-caption-container"}>
         {messageEditType !== AppConstants.messageEditTye.disabled && caption["userId"] === senderUserId ?
         <FontAwesomeIcon title="Edit" onClick={() => setIsEdit(!isEdit)} className="float-end p-1 chat-fa-icon" icon={faEdit} size="sm" />
         : <></>}

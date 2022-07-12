@@ -2,6 +2,7 @@ import React from 'react';
 import "./header.css";
 import { Container, Navbar,Nav,NavDropdown} from 'react-bootstrap';
 import RecordView from "./RecordView";
+import Time from "./Time";
 class Header extends React.Component {
     render() {
         return (
@@ -20,6 +21,7 @@ class Header extends React.Component {
                         &copy;{new Date().getFullYear()} Center on Access Technology - NTID/RIT | All rights reserved
                     </Navbar.Text> */}
                 </Container>
+                <Time/>
             </Navbar>
         )
     }

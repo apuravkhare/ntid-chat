@@ -14,7 +14,7 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 import { toast } from 'react-toastify';
 import AppConstants from "../AppConstants";
 import AppUtil from "../util/AppUtil";
-import myImage from "../man_talking.jpeg"
+import myImage from "../man_speaking.jpeg"
 /** 
  * Placeholder component for the HTML video tag, with additional styles.
  */

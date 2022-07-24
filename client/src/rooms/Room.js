@@ -549,7 +549,7 @@ const Room = (props) => {
             <Row className="align-items-center" style={{boxShadow:"0px 2px 5px #999999", height: !roomOptions.video ? "2em" : (roomOptions.showCaptions ? "33%" : "50%"), overflow:"auto"}}>
                 {roomOptions.video ? renderVideo() : renderAudio()}
             </Row>
-            <Row hidden={roomOptions.showCaptions === false} className="align-items-center" style={{height: roomOptions.video ? "50%" : "75%", fontSize: allowedFontSizes[fontSizeIndex]}}>
+            <Row hidden={roomOptions.showCaptions === false} className="align-items-center" style={{ borderLeftStyle: "groove", borderRightStyle: "groove", margin: "auto", maxWidth: "700px",height: roomOptions.video ? "50%" : "75%", fontSize: allowedFontSizes[fontSizeIndex]}}>
                 <Col className="h-100">
                     <ScrollingCaption onSend={sendEditedMessage} style = {{}} currentUserId={socketRef.current && socketRef.current.id} displayCaptions={asrResult} identifySpeakers={roomOptions.identifySpeakers} messageEditType={roomOptions.messageEditType} />
                 </Col>

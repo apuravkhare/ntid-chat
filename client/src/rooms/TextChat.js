@@ -64,7 +64,7 @@ const TextChat = ({onSend, fontSize, enableSpeech, onSpeech, externalInput, isLi
 
   return (
     <>
-      <input ref={inputRef} type="text" onKeyUp={onKeyUp} onChange={onTyping} className="w-75" style={{ resize: "none", borderRadius: "1em", fontSize: fontSize }}></input>
+      <input ref={inputRef} type="text" onKeyUp={onKeyUp} onChange={onTyping} className="w-75" style={{ height: "35px", overflow: "scroll", resize: "none", borderRadius: "1em", fontSize: fontSize }}></input>
       <span className="chat-fa-text-chat-icon" onClick={handleSendClick} >
         <FontAwesomeIcon icon={faArrowUp} size="lg" />
         {/* <span className="lead" style={{padding: "0.5 em"}}>Send</span> */}
